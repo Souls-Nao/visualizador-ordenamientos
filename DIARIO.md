@@ -6,6 +6,31 @@ La entrada más reciente va arriba.
 
 ---
 
+## 25/09/2026 · B07: Métricas
+
+**Archivo:** `js/core/metricas.js`. Es **el único lugar donde se calculan las métricas** (pregunta
+típica de la revisión: "¿dónde se calcula una métrica?").
+
+**Contadores.** `registrarEvento(contadores, evento)` suma según el tipo de evento:
+comparaciones, intercambios, escrituras, movimientos (intercambios + escrituras) y pasos (todo
+evento menos `done`). Se guardan intercambios y escrituras por separado porque la actividad menciona
+"número de intercambios", pero para comparar algoritmos se usa "movimientos": Bubble y Quick
+intercambian, mientras que Insertion y Merge escriben, y así todos se miden igual.
+
+**`contarEjecucion(generador)`** recorre un algoritmo completo sin animar. Lo usan las pruebas, y
+B09 podrá usarlo para saber los totales de antemano.
+
+**`describirEvento(evento, valores)`** arma el mensaje del panel, por ejemplo
+"Comparando posiciones 3 (45) y 4 (12)". Los valores se toman del espejo antes de aplicar el evento;
+si no se pasan, la frase sale sin números.
+
+**Pruebas (68/68).** `test.html` ya no cuenta a mano: usa `registrarEvento`. Para compararse con
+Python convierte a su unidad: en Python `a, b = b, a` son 2 escrituras, así que
+`escrituras Python = 2 × intercambios + escrituras`. Se agregaron pruebas de Bubble con [5,4,3,2,1],
+de Merge (solo escribe) y de las frases.
+
+---
+
 ## 25/09/2026 · B06: Panel de código
 
 **Archivo:** `js/ui/panelCodigo.js` (+ `.codigo__titulo` en CSS, montado en `main.js`).

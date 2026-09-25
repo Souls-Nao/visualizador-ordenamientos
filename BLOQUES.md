@@ -55,7 +55,7 @@ terminarlo se actualiza su ficha y la bitácora.
 | B04 | Render: espejo y barras en canvas | D-08 | B01 | H3 | ✅ |
 | B05 | Reproductor y velocidad | D-09, D-10 | B00 | H3 | ✅ |
 | B06 | Panel de código y líneas de Python | D-14 | B03 | H4 | ✅ |
-| B07 | Métricas: contadores y mensaje | D-13 | B01 | H3 | ⬜ |
+| B07 | Métricas: contadores y mensaje | D-13 | B01 | H3 | ✅ |
 | B08 | Visualizador de un algoritmo | D-12, D-13 (UI) | B02–B07 | H3 | ⬜ |
 | B09 | Comparación: varios paneles y resumen | D-15, D-16 | B08 | H4 | ⬜ |
 | B10 | Benchmark: versiones fieles y Worker | D-17, D-18 | B02, B03 | H5 | ⬜ |
@@ -128,7 +128,7 @@ Los archivos marcados con ✔ ya existen en el repositorio.
 │   ├── core/
 │   │   ├── eventos.js         ✔  B01
 │   │   ├── datos.js           ✔  B02
-│   │   └── metricas.js           B07
+│   │   └── metricas.js        ✔  B07
 │   ├── algoritmos/
 │   │   ├── selectionSort.js   ✔  B03  ┐
 │   │   ├── bubbleSort.js      ✔  B03  │
@@ -346,8 +346,7 @@ export function crearEventoTerminado()                // { type:'done' }
 **Reglas:** ningún evento lleva el arreglo completo; el consumidor mantiene un espejo. `done` es
 siempre el último evento. `line` es 1-indexado dentro de `ALGORITMOS[id].fuente` (ver cambio de
 contrato del 25/09/2026 en la sección 5).
-**Regla de conteo** (la aplica B07, igual para los 8): `compare` → comparaciones +1 · `swap` y
-`write` → movimientos +1 · todo evento salvo `done` → pasos +1.
+**Regla de conteo:** la aplica B07 (`registrarEvento`), igual para los 8 algoritmos.
 
 ---
 
@@ -512,22 +511,25 @@ export function crearPanelCodigo(contenedor = document.getElementById('zona-codi
 
 ---
 
-### B07: Métricas: contadores y mensaje ⬜
+### B07: Métricas: contadores y mensaje ✅
 
-- **Tareas:** D-13 (lógica) · **Depende de:** B01
+- **Tareas:** D-13 (lógica) · **Depende de:** B01 · **Commits:** ver bitácora
 - **Archivos:** `js/core/metricas.js`
 
 **Exporta (contrato):**
 ```js
-export function crearContadores() {}              // { comparaciones: 0, movimientos: 0, pasos: 0 }
-export function registrarEvento(contadores, evento) {}   // aplica la regla de conteo de B01
-export function describirEvento(evento) {}        // 'Comparando posiciones 3 y 4', 'Intercambiando…', …
-export function contarEjecucion(generador) {}     // recorre un generador completo → contadores (pruebas y resumen)
+export function crearContadores() {}
+// → { comparaciones:0, intercambios:0, escrituras:0, movimientos:0, pasos:0 }
+export function registrarEvento(contadores, evento) {}
+export function contarEjecucion(generador) {}          // recorre todo sin animar → contadores
+export function describirEvento(evento, valores?) {}   // 'Comparando posiciones 3 (45) y 4 (12)'
 ```
-**Aquí y solo aquí** se calculan las métricas del visualizador.
-**Criterio:** `test.html` usa `contarEjecucion` en lugar de su contador interno y los conteos de
-B03 siguen pasando (ojo: B03 cuenta escrituras, con un intercambio = 2; B07 cuenta movimientos,
-con un intercambio = 1).
+**Regla de conteo:** `compare` → comparaciones · `swap` → intercambios y movimientos · `write` →
+escrituras y movimientos · todo evento salvo `done` → pasos. **Aquí y solo aquí** se calculan las
+métricas del visualizador.
+**Nota:** `valores` en `describirEvento` debe ser el espejo **antes** de aplicar el evento.
+**Verificación:** `test.html` cuenta con `registrarEvento`; la comparación con Python usa
+`2 × intercambios + escrituras` (68/68).
 
 ---
 
@@ -681,7 +683,8 @@ export function descargarCSV(resultados, nombre = 'benchmark.csv') {}
 | 25/09/2026 | B03 | Mejoras para el visualizador (Selection, Bubble, Merge), `conteos.py` y 48 pruebas contra el Python mostrado; bloque cerrado ✅ | `3e5bfe9`, `4b10024` | — |
 | 25/09/2026 | B04 | Espejo y canvas de barras; test.html usa el espejo; bloque cerrado ✅ | `e5c09d3`, `b276288` | — |
 | 25/09/2026 | B05 | Reproductor con acumulador y velocidad logarítmica; bloque cerrado ✅ | `ced8bc9`, `64301cb` | — |
-| 25/09/2026 | B06 | Panel de código con línea activa y prueba de correspondencia; bloque cerrado ✅ | ver `git log --grep B06` | B07 (métricas) |
+| 25/09/2026 | B06 | Panel de código con línea activa y prueba de correspondencia; bloque cerrado ✅ | `5be5472`, `0545a9a` | — |
+| 25/09/2026 | B07 | Contadores y mensajes de estado; bloque cerrado ✅ | ver `git log --grep B07` | B08 (visualizador de un algoritmo) |
 
 ---
 
