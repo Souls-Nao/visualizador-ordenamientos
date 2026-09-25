@@ -50,11 +50,11 @@ terminarlo se actualiza su ficha y la bitácora.
 | B00 | Base, maqueta y publicación | D-01, D-02, D-03 | — | H1 | ✅ |
 | B01 | Contrato de eventos | D-04 | — | H2 | ✅ |
 | B02 | Generación de datos | D-11 | — | H3 | ✅ |
-| B03 | Algoritmos generadores y registro | D-05, D-06, D-07, T-01 | B01 | H2 | 🟨 |
+| B03 | Algoritmos generadores y registro | D-05, D-06, D-07, T-01, T-02 | B01 | H2 | ✅ |
 | B04 | Render: espejo y barras en canvas | D-08 | B01 | H3 | ⬜ |
 | B05 | Reproductor y velocidad | D-09, D-10 | B00 | H3 | ⬜ |
 | B06 | Panel de código y líneas de Python | D-14 | B03 | H4 | ⬜ |
-| B07 | Métricas: contadores y mensaje | D-13, T-02 | B01 | H3 | ⬜ |
+| B07 | Métricas: contadores y mensaje | D-13 | B01 | H3 | ⬜ |
 | B08 | Visualizador de un algoritmo | D-12, D-13 (UI) | B02–B07 | H3 | ⬜ |
 | B09 | Comparación: varios paneles y resumen | D-15, D-16 | B08 | H4 | ⬜ |
 | B10 | Benchmark: versiones fieles y Worker | D-17, D-18 | B02, B03 | H5 | ⬜ |
@@ -138,7 +138,7 @@ Los archivos marcados con ✔ ya existen en el repositorio.
 │   │   ├── mergeSort.js       ✔  B03  │
 │   │   ├── quickSort.js       ✔  B03  ┘
 │   │   ├── index.js           ✔  B03  registro ALGORITMOS
-│   │   └── fuentesPython.js      B06  código Python mostrado en pantalla
+│   │   └── fuentesPython.js   ✔  B03  código Python mostrado en pantalla
 │   ├── render/
 │   │   ├── espejo.js             B04  estado de las barras (lógica pura)
 │   │   └── canvasBarras.js       B04  dibujo en canvas y COLORES
@@ -162,7 +162,7 @@ Los archivos marcados con ✔ ya existen en el repositorio.
 └── docs/
     ├── eventos.md             ✔  B01
     ├── referencia/               B00  ordenamientos.py, benchmark.py, main.py originales
-    ├── pruebas.md                B07
+    ├── pruebas.md                B07  (opcional: los conteos ya se prueban en test.html)
     ├── boceto/                       entregable 1
     └── capturas/                 B13
 ```
@@ -200,6 +200,7 @@ contenedor · `vista-` sección de pestaña · `tabla-` tabla · `bench-` campo 
 | `RANGO_VALORES` | `core/datos.js` (B02) | `{ minimo: 0, maximo: 10000 }` | B04, B10 |
 | `PATRONES` | `core/datos.js` (B02) | `aleatoria, ordenada, invertida, casi-ordenada` | B08, B10 |
 | `ALGORITMOS` | `algoritmos/index.js` (B03) | registro de los 8 | B06, B08, B09, B10, B12 |
+| `FUENTES_PYTHON` | `algoritmos/fuentesPython.js` (B03) | código Python por algoritmo; se usa vía `ALGORITMOS[id].fuente` | B03, B06 |
 | `TAMANO_MIN` / `TAMANO_MAX` / `TAMANO_DEFECTO` | `config.js` (B00) | `5` / `120` / `30` | B08 |
 | `LIMITE_STOOGE_VISUAL` | `config.js` (B00) | `30` | B08, B09 |
 | `VELOCIDAD_MIN` / `VELOCIDAD_MAX` / `VELOCIDAD_DEFECTO` | `config.js` (B00) | `1` / `2000` / `20` pasos por segundo | B05, B08 |
@@ -340,7 +341,8 @@ export function crearEventoOrdenado(index, line)      // { type:'sorted',  indic
 export function crearEventoTerminado()                // { type:'done' }
 ```
 **Reglas:** ningún evento lleva el arreglo completo; el consumidor mantiene un espejo. `done` es
-siempre el último evento. `line` es 1-indexado en el código Python de B06.
+siempre el último evento. `line` es 1-indexado dentro de `ALGORITMOS[id].fuente` (ver cambio de
+contrato del 25/09/2026 en la sección 5).
 **Regla de conteo** (la aplica B07, igual para los 8): `compare` → comparaciones +1 · `swap` y
 `write` → movimientos +1 · todo evento salvo `done` → pasos +1.
 
@@ -363,43 +365,63 @@ benchmark (B10) necesita listas más grandes. "Casi ordenada" desordena el 5 % (
 
 ---
 
-### B03: Algoritmos generadores y registro 🟨
+### B03: Algoritmos generadores y registro ✅
 
-- **Tareas:** D-05, D-06, D-07, T-01 · **Depende de:** B01 · **Commits:** `1bafb70`
-- **Archivos:** `js/algoritmos/*Sort.js` (8), `js/algoritmos/index.js`, `test.html`
+- **Tareas:** D-05, D-06, D-07, T-01, T-02 · **Depende de:** B01 · **Commits:** `1bafb70` + ver bitácora
+- **Archivos:** `js/algoritmos/*Sort.js` (8), `js/algoritmos/fuentesPython.js`,
+  `js/algoritmos/index.js`, `test.html`
 
 **Exporta (contrato):**
 ```js
-// cada archivo
+// cada archivo *Sort.js
 export function* bubbleSort(arregloInicial) {}   // copia la entrada, emite eventos B01, termina con done
 
+// fuentesPython.js
+export const FUENTES_PYTHON = { selection: string[], ..., quick: string[] };   // congelado
+
 // index.js
-export const ALGORITMOS = {
-  selection: { nombre, generador, mejor, promedio, peor, espacio, estable: 'Sí'|'No', descripcion },
+export const ALGORITMOS = {            // congelado; el orden de las claves es el de la interfaz
+  selection: {
+    nombre, generador, fuente /* = FUENTES_PYTHON.selection */,
+    categoria /* 'fuerza-bruta' | 'divide-y-venceras' */,
+    mejor, promedio, peor, espacio, estable /* 'Sí' | 'No' */, descripcion
+  },
   bubble, insertion, gnome, exchange, stooge, merge, quick
-};  // el orden de las claves es el orden en que se muestran
+};
 ```
 
-**Pendientes para cerrar el bloque:**
-- [ ] `bubbleSort`: quitar la salida temprana y recorrer `range(n)` × `range(0, n-1)` como el original
-  (con n = 5 deben salir 20 comparaciones) y actualizar `mejor: 'O(n²)'` en el registro.
-- [ ] `gnomeSort`: con n = 1 entra en un bucle infinito (compara la posición 1, que no existe).
-  Seguir la estructura del original: `if i == 0 or arr[i] >= arr[i-1]`.
-- [ ] `selectionSort`: el original recorre `range(n - 1)` e intercambia siempre; decidir si se replica
-  para que los movimientos coincidan con Python.
-- [ ] `exchangeSort`: con n = 0 emite `sorted` en la posición -1.
-- [ ] `test.html`: probar también vacía, 1 elemento, duplicados, ordenada, invertida y 20 listas
-  aleatorias; verificar que la entrada no se modifica y que el último evento es `done`.
-- [ ] Líneas de Python (`line`): hoy son 0 o provisionales. **Se corrigen en B06**, junto con
-  `fuentesPython.js`, como estaba previsto en los comentarios del código.
+**Reglas internas de los generadores:**
+- Cada archivo define `const LINEA = { COMPARAR: 7, ... }` con las líneas de su fuente que usa.
+  Si se edita una fuente, se revisan esas constantes (`test.html` detecta líneas fuera de rango).
+- Solo se emite `sorted` cuando el algoritmo realmente fija una posición (Selection, Bubble,
+  Exchange y Quick). Los demás dejan que `done` marque todo al final (B04).
 
-**Notas por algoritmo:**
+**Fidelidad con `docs/referencia/ordenamientos.py`:**
 
-| ID | Nota |
-|---|---|
-| `merge` | versión con índices `lo`/`hi` y arreglo `temp`; vuelca con `write` |
-| `quick` | versión **en el lugar** (Lomuto, pivote al final) solo para visualizar; el original crea listas nuevas y se usa en B10 |
-| `stooge` | recursivo con `yield*`; en la interfaz se limita a `LIMITE_STOOGE_VISUAL` |
+| ID | Relación con el original | Conteos iguales a Python |
+|---|---|---|
+| `selection` | Traducción exacta: `range(n-1)` e intercambio siempre, aunque `min_idx == i` | ✔ |
+| `bubble` | Traducción exacta: n pasadas completas, sin salida temprana | ✔ |
+| `insertion` | Traducción exacta: desplaza con escrituras y luego escribe la clave | ✔ |
+| `gnome` | Traducción exacta, con el cortocircuito de `i == 0` | ✔ |
+| `exchange` | Traducción exacta: compara `arr[j] < arr[i]` | ✔ |
+| `stooge` | Traducción exacta, recursión con `yield*` | ✔ |
+| `merge` | Misma lógica con índices `lo`/`hi` sobre un solo arreglo; mismo punto de corte y mismo `<` | ✔ |
+| `quick` | Versión en el lugar con la misma idea: pivote al centro y tres grupos (`<`, `==`, `>`) | ✘ por diseño; el fiel está en B10 |
+
+**Verificación (25/09/2026):** `test.html` ejecuta 37 pruebas: 27 listas por algoritmo (vacía, 1 y 2
+elementos, todos iguales, duplicados, ordenada, invertida y 5 aleatorias de cada patrón), contrato
+de eventos (`line` en rango, índices válidos, `done` al final, entrada sin modificar), registro
+completo y conteos idénticos a Python en 3 listas fijas (con n = 5 invertida: Bubble 20, Selection 10 y
+Exchange 10 comparaciones, criterio de T-02). Todas pasan en 10 cargas seguidas.
+
+**Decisiones / notas:**
+- `merge.estable = 'No'`: el original compara con `<`, así que ante un empate toma primero el de la
+  derecha. Con `<=` sería estable, pero ya no sería fiel a la práctica.
+- En Merge, al comparar se resaltan `lo + i` y `mid + j` (de dónde salieron los valores); la barra
+  de la izquierda puede estar ya sobrescrita, porque el valor real está en la copia `izquierda`.
+- En Quick, el pivote puede moverse durante la partición: los eventos `compare` siempre apuntan a su
+  posición actual.
 
 ---
 
@@ -427,6 +449,11 @@ export const COLORES = { 'sin-tocar':'…azul', comparando:'…amarillo', interc
 export function crearCanvasBarras(canvas, { maximo = RANGO_VALORES.maximo } = {}) {}
 // → { dibujar(espejo), redimensionar(), destruir() }   // usa ResizeObserver y devicePixelRatio
 ```
+**Notas para implementar:**
+- Insertion, Gnome, Stooge y Merge no emiten `sorted`; dependen de que `done` marque todo.
+- Quick emite `pivot` una vez por partición y luego `compare(i, posPivote)`; el pivote puede
+  moverse con un `swap`. Decidir aquí si el color de pivote persiste durante la partición.
+
 **Criterio:** barras proporcionales con los 5 colores; se adaptan al tamaño del canvas.
 
 ---
@@ -455,27 +482,23 @@ export function sliderDesdeVelocidad(pps) {}
 ### B06: Panel de código y líneas de Python ⬜
 
 - **Tareas:** D-14 · **Depende de:** B03
-- **Archivos:** `js/algoritmos/fuentesPython.js`, `js/ui/panelCodigo.js`; ajusta el `line` de los 8 generadores
+- **Archivos:** `js/ui/panelCodigo.js` (`fuentesPython.js` y las líneas de los generadores se hicieron en B03)
 
 **Exporta (contrato):**
 ```js
-// fuentesPython.js
-export const FUENTES_PYTHON = { selection: ['def selection_sort(lista):', ...], ... }; // 8 entradas
 // panelCodigo.js
 export function crearPanelCodigo(contenedor = document.getElementById('zona-codigo')) {}
 // → { mostrar(idAlgoritmo), resaltar(line), limpiar() }
 ```
-**Reglas:** `line` es 1-indexado sobre `FUENTES_PYTHON[id]`. El código mostrado es el de
-`docs/referencia/ordenamientos.py`, salvo Quick Sort, que muestra la versión en el lugar que se anima.
-`test.html` verifica que toda `line` esté entre 1 y la longitud de su fuente.
+**Consume:** `ALGORITMOS[id].fuente` (B03). `line` es 1-indexado sobre esa fuente.
 **Criterio:** en los 8 algoritmos la línea resaltada corresponde a la operación visible.
 
 ---
 
 ### B07: Métricas: contadores y mensaje ⬜
 
-- **Tareas:** D-13 (lógica), T-02 · **Depende de:** B01
-- **Archivos:** `js/core/metricas.js`, `docs/pruebas.md`
+- **Tareas:** D-13 (lógica) · **Depende de:** B01
+- **Archivos:** `js/core/metricas.js`
 
 **Exporta (contrato):**
 ```js
@@ -485,7 +508,8 @@ export function describirEvento(evento) {}        // 'Comparando posiciones 3 y 
 export function contarEjecucion(generador) {}     // recorre un generador completo → contadores (pruebas y resumen)
 ```
 **Aquí y solo aquí** se calculan las métricas del visualizador.
-**Criterio:** con n = 5 invertida, Bubble 20, Selection 10 y Exchange 10 comparaciones.
+**Criterio:** `test.html` usa `contarEjecucion` en lugar de su contador interno y los conteos de
+Python (ya fijados en B03) siguen pasando.
 
 ---
 
@@ -598,7 +622,8 @@ export function descargarCSV(resultados, nombre = 'benchmark.csv') {}
 
 | Fecha | Bloque | Qué cambió | Por qué | Bloques actualizados |
 |---|---|---|---|---|
-| — | — | — | — | — |
+| 25/09/2026 | B01 | `line` pasa de "línea de `ordenamientos.py`" a "línea 1-indexada dentro de `ALGORITMOS[id].fuente`" | Merge y Quick muestran una versión adaptada, y cada panel muestra solo su algoritmo | B03 (todas las líneas), `docs/eventos.md`; B06 aún no existía |
+| 25/09/2026 | B03 | `ALGORITMOS[id]` agrega `fuente` y `categoria`; `fuentesPython.js` pasa de B06 a B03 | Sin la fuente no se podían fijar las líneas correctas; `categoria` la usan B10 y B11 | B06 (ficha ajustada, aún sin código) |
 
 ---
 
@@ -633,7 +658,8 @@ export function descargarCSV(resultados, nombre = 'benchmark.csv') {}
 | 25/09/2026 | B03 | 8 generadores, registro y `test.html` | `1bafb70` | Correcciones de B03 |
 | 25/09/2026 | — | BLOQUES.md alineado con el código existente; se elimina el volcado de git config | `049dc70`, `ccd423b` | B00 |
 | 25/09/2026 | B00 | Estructura, `config.js`, pestañas, maqueta completa, `.py` de referencia | `4c0ce68`, `80e2772` | — |
-| 25/09/2026 | B00 | Publicación en GitHub Pages verificada; bloque cerrado ✅ | *(este commit)* | Correcciones de B03 |
+| 25/09/2026 | B00 | Publicación en GitHub Pages verificada; bloque cerrado ✅ | `877c9b4` | — |
+| 25/09/2026 | B03 | Generadores fieles a Python, `fuentesPython.js`, registro corregido y `test.html` con 37 pruebas; bloque cerrado ✅ | ver `git log --grep B03` | B04 (espejo y canvas) |
 
 ---
 

@@ -38,8 +38,11 @@ mantiene su propio espejo del arreglo** y lo actualiza aplicando la operación:
 | `sorted` | `indices: [i]`, `line` | Una posición queda en su lugar definitivo. |
 | `done` | *(ninguno)* | Última señal de la ejecución. No lleva `indices` ni `line`. |
 
-`line` es el número de línea del código Python (`ordenamientos.py`) que representa la operación;
-lo usa el panel de código (Bloque 06) para resaltar la línea activa.
+`line` es el número de línea, contando desde 1, dentro de la fuente Python de su algoritmo
+(`FUENTES_PYTHON[id]` en `js/algoritmos/fuentesPython.js`, también disponible como
+`ALGORITMOS[id].fuente`). Las fuentes de los 6 algoritmos de fuerza bruta son copia exacta de
+`ordenamientos.py`; Merge y Quick usan versiones sobre un solo arreglo. Lo usa el panel de código
+(Bloque 06) para resaltar la línea activa, y `test.html` verifica que ninguna quede fuera de rango.
 
 ## Estados de color
 
@@ -56,12 +59,12 @@ El Bloque 04 traduce cada tipo de evento a un estado de color de barra, usando e
 
 ## Ejemplo
 
-Comparación de las posiciones 0 y 1, seguida de un intercambio entre ellas (línea 7 de
-`bubble_sort` en `ordenamientos.py`, que es `if arr[j] > arr[j + 1]:` y su intercambio):
+Comparación de las posiciones 0 y 1, seguida de un intercambio entre ellas. En la fuente de
+`bubble_sort`, la línea 6 es `if arr[j] > arr[j + 1]:` y la 7 es el intercambio:
 
 ```js
-{ type: 'compare', indices: [0, 1], line: 7 }
-{ type: 'swap',    indices: [0, 1], line: 8 }
+{ type: 'compare', indices: [0, 1], line: 6 }
+{ type: 'swap',    indices: [0, 1], line: 7 }
 ```
 
 Al terminar toda la ejecución:
