@@ -18,7 +18,7 @@
 </head>
 <body>
 <main>
-  <h1>Pruebas del proyecto (Bloques 03 a 07)</h1>
+  <h1>Pruebas del proyecto (Bloques 03 a 08)</h1>
   <p>
     Cada algoritmo del registro se ejecuta con varias listas. Los eventos se aplican sobre una copia
     (un "espejo") y el resultado se compara con <code>Array.prototype.sort</code>. Los conteos se
@@ -40,6 +40,7 @@
   import { VELOCIDAD_MIN, VELOCIDAD_MAX, VELOCIDAD_DEFECTO } from './js/config.js';
   import { crearPanelCodigo } from './js/ui/panelCodigo.js';
   import { crearContadores, registrarEvento, contarEjecucion, describirEvento } from './js/core/metricas.js';
+  import { crearPanelAlgoritmo } from './js/ui/panelAlgoritmo.js';
   import { generarDatos, PATRONES } from './js/core/datos.js';
 
   /*
@@ -322,6 +323,41 @@
     reportar(M, 'describirEvento arma frases legibles con y sin valores',
       frases.join('|') === 'Comparando posiciones 3 (45) y 4 (12)|La posición 2 se queda en su lugar|' +
                            'Escribiendo 57 en la posición 1|Ordenamiento terminado', frases.join(' | '));
+  }
+
+  // ── Bloque 08: panel de algoritmo e index.html ──
+  {
+    const V = 'Visualizador';
+    const caja = document.createElement('div');
+    document.body.append(caja);
+    const errores = [];
+    for (const id of Object.keys(ALGORITMOS)) {
+      const lista = generarDatos(id === 'stooge' ? 15 : 40, PATRONES.ALEATORIA);
+      const panel = crearPanelAlgoritmo({ contenedor: caja, id, lista });
+      let vueltas = 0;
+      while (panel.avanzar(7) && vueltas++ < 100000);
+      const esperado = contarEjecucion(ALGORITMOS[id].generador(lista));
+      const enPantalla = [...caja.querySelectorAll('[data-contador]')].map((d) => d.textContent.replace(/\D/g, ''));
+      const ok = panel.terminado &&
+        JSON.stringify(panel.contadores) === JSON.stringify(esperado) &&
+        enPantalla.join() === [esperado.comparaciones, esperado.movimientos, esperado.pasos].join() &&
+        caja.querySelector('.panel__mensaje').textContent === 'Ordenamiento terminado';
+      if (!ok) errores.push(id);
+
+      panel.reiniciar(lista);
+      if (panel.terminado || panel.contadores.pasos !== 0) errores.push(`${id} (reiniciar)`);
+      panel.destruir();
+    }
+    reportar(V, 'Cada panel llega al final de a 7 pasos, con contadores iguales a contarEjecucion, y reinicia en cero',
+             errores.length === 0 && caja.children.length === 0, errores.join(', '));
+    caja.remove();
+
+    const html = new DOMParser().parseFromString(await (await fetch('index.html')).text(), 'text/html');
+    const valores = (sel) => [...html.querySelectorAll(`${sel} option`)].map((o) => o.value).join();
+    const esperado = Object.values(PATRONES).join();
+    reportar(V, 'Las opciones de #sel-patron y #bench-patron coinciden con PATRONES',
+             valores('#sel-patron') === esperado && valores('#bench-patron') === esperado,
+             `${valores('#sel-patron')} / ${valores('#bench-patron')}`);
   }
 
   const resumen = document.getElementById('resumen');

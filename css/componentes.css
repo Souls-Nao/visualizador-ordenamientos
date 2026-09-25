@@ -48,6 +48,18 @@
   grid-column: 1 / -1;
 }
 
+.casilla {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-2);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.casilla input {
+  accent-color: var(--acento);
+}
+
 /* ── Avisos ── */
 .aviso {
   padding: var(--esp-2) var(--esp-3);
@@ -94,6 +106,12 @@
 
 .panel__titulo {
   font-size: 1rem;
+}
+
+.panel__complejidad {
+  color: var(--texto-suave);
+  font-family: var(--fuente-mono);
+  font-size: 0.8rem;
 }
 
 .panel__lienzo {
