@@ -12,7 +12,8 @@ import { iniciarPestanas } from './ui/pestanas.js';
 import { crearPanelCodigo } from './ui/panelCodigo.js';
 import { crearEscena } from './ui/escena.js';
 import { iniciarControles } from './ui/controles.js';
-import { pintarFicha, pintarLeyenda } from './ui/ficha.js';
+import { pintarFicha, pintarLeyenda, pintarResumen } from './ui/ficha.js';
+import { ESTADOS_REPRODUCTOR } from './motor/reproductor.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -25,11 +26,20 @@ $('enlace-tablero').href = ENLACES.tablero;
 const panelCodigo = crearPanelCodigo($('zona-codigo'));
 
 // Bloque 08 — Visualizador: escena, controles, ficha y leyenda.
+// Bloque 09 — Comparación: al terminar todos se muestra el resumen; al
+// volver a empezar (estado 'detenido') se oculta.
 let controles = null;
 const escena = crearEscena({
   zonaPaneles: $('zona-paneles'),
   panelCodigo,
-  alCambiarEstado: () => controles?.actualizarBotones(),
+  alCambiarEstado: (estado) => {
+    if (estado === ESTADOS_REPRODUCTOR.DETENIDO) $('zona-resumen').classList.add('oculto');
+    controles?.actualizarBotones();
+  },
+  alTerminarTodos: (resumen) => {
+    pintarResumen($('tabla-resumen'), resumen);
+    $('zona-resumen').classList.remove('oculto');
+  },
   alCambiarActivo: (id) => {
     if (id) pintarFicha($('zona-ficha'), id);
     else $('zona-ficha').replaceChildren();

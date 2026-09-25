@@ -4,6 +4,7 @@
  * Bloque 08 — Controles del visualizador.
  *
  * Conecta los elementos de index.html (IDs de BLOQUES.md 3.3) con la escena.
+ * Todos / Ninguno marcan o desmarcan todas las casillas (Bloque 09).
  * Aquí se validan los límites de la interfaz: tamaño de 5 a 120 y Stooge
  * Sort limitado a LIMITE_STOOGE_VISUAL elementos.
  */
@@ -91,14 +92,24 @@ export function iniciarControles(escena) {
   }
 
   // ── Eventos ──
-  $('zona-seleccion').addEventListener('change', () => {
+  /** Aplica la selección actual de casillas a la escena. */
+  function aplicarSeleccion() {
     const antes = Number(inpTamano.value);
     const n = tamanoPermitido();
     escena.setSeleccion(seleccionados());
     // Si Stooge obligó a reducir el tamaño, hace falta una lista nueva.
     if (n !== antes) escena.nuevaLista(n, selPatron.value);
     actualizarBotones();
-  });
+  }
+
+  function marcarTodas(marcar) {
+    for (const etiqueta of casillas) etiqueta.firstChild.checked = marcar;
+    aplicarSeleccion();
+  }
+
+  $('zona-seleccion').addEventListener('change', aplicarSeleccion);
+  $('btn-todos').addEventListener('click', () => marcarTodas(true));
+  $('btn-ninguno').addEventListener('click', () => marcarTodas(false));
 
   inpTamano.addEventListener('input', () => { lblTamano.textContent = inpTamano.value; });
   inpTamano.addEventListener('change', nuevaLista);

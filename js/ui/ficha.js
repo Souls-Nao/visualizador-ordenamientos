@@ -6,6 +6,7 @@
  * La ficha muestra nombre, complejidad (requisitos 7 y 8 de la actividad),
  * espacio, estabilidad y una descripción, todo tomado del registro (B03).
  * La leyenda se genera desde COLORES (B04), la misma fuente que usa el canvas.
+ * El resumen de la comparación (Bloque 09) se pinta con pintarResumen.
  */
 import { ALGORITMOS } from '../algoritmos/index.js';
 import { COLORES, NOMBRES_ESTADO } from '../render/canvasBarras.js';
@@ -56,4 +57,43 @@ export function pintarLeyenda(contenedor) {
     return item;
   });
   contenedor.replaceChildren(...items);
+}
+
+/** Columnas de la tabla resumen: [encabezado, campo del resumen]. */
+const COLUMNAS_RESUMEN = [
+  ['Llegada', 'llegada'],
+  ['Algoritmo', 'nombre'],
+  ['Complejidad promedio', 'complejidad'],
+  ['Comparaciones', 'comparaciones'],
+  ['Intercambios', 'intercambios'],
+  ['Escrituras', 'escrituras'],
+  ['Pasos', 'pasos'],
+];
+
+/**
+ * Tabla con los contadores de cada algoritmo, en orden de llegada.
+ *
+ * @param {HTMLTableElement} tabla
+ * @param {Object[]} resumen  Salida de escena.resumen (Bloque 09).
+ */
+export function pintarResumen(tabla, resumen) {
+  tabla.replaceChildren();
+  const encabezado = tabla.createTHead().insertRow();
+  for (const [titulo] of COLUMNAS_RESUMEN) {
+    const th = document.createElement('th');
+    th.scope = 'col';
+    th.textContent = titulo;
+    encabezado.append(th);
+  }
+
+  const cuerpo = tabla.createTBody();
+  for (const fila of resumen) {
+    const tr = cuerpo.insertRow();
+    for (const [, campo] of COLUMNAS_RESUMEN) {
+      const valor = fila[campo];
+      tr.insertCell().textContent =
+        campo === 'llegada' ? `${valor}.º` :
+        typeof valor === 'number' ? valor.toLocaleString('es-MX') : valor;
+    }
+  }
 }
