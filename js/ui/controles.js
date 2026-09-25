@@ -5,14 +5,18 @@
  *
  * Conecta los elementos de index.html (IDs de BLOQUES.md 3.3) con la escena.
  * Todos / Ninguno marcan o desmarcan todas las casillas (Bloque 09).
+ * La selección, el tamaño, el patrón y la velocidad se recuerdan entre
+ * visitas (Bloque 12, preferencias.js).
  * Aquí se validan los límites de la interfaz: tamaño de 5 a 120 y Stooge
  * Sort limitado a LIMITE_STOOGE_VISUAL elementos.
  */
 import { ALGORITMOS } from '../algoritmos/index.js';
+import { PATRONES } from '../core/datos.js';
 import {
   TAMANO_MIN, TAMANO_MAX, TAMANO_DEFECTO, LIMITE_STOOGE_VISUAL, VELOCIDAD_DEFECTO,
 } from '../config.js';
 import { ESTADOS_REPRODUCTOR, velocidadDesdeSlider, sliderDesdeVelocidad } from '../motor/reproductor.js';
+import { cargarPreferencias, guardarPreferencias } from './preferencias.js';
 
 /** Algoritmo marcado al abrir la página. */
 const SELECCION_INICIAL = ['bubble'];
@@ -36,6 +40,12 @@ export function iniciarControles(escena) {
     reiniciar: $('btn-reiniciar'),
   };
 
+  // Preferencias de la visita anterior; se ignora lo que ya no sea válido.
+  const prefs = cargarPreferencias() ?? {};
+  const seleccionInicial = Array.isArray(prefs.seleccionados)
+    ? prefs.seleccionados.filter((id) => id in ALGORITMOS)
+    : SELECCION_INICIAL;
+
   // ── Casillas de algoritmos, generadas desde el registro ──
   const casillas = Object.entries(ALGORITMOS).map(([id, { nombre }]) => {
     const etiqueta = document.createElement('label');
@@ -43,7 +53,7 @@ export function iniciarControles(escena) {
     const casilla = document.createElement('input');
     casilla.type = 'checkbox';
     casilla.value = id;
-    casilla.checked = SELECCION_INICIAL.includes(id);
+    casilla.checked = seleccionInicial.includes(id);
     etiqueta.append(casilla, nombre);
     return etiqueta;
   });
@@ -78,6 +88,16 @@ export function iniciarControles(escena) {
   function nuevaLista() {
     escena.nuevaLista(tamanoPermitido(), selPatron.value);
     actualizarBotones();
+    guardar();
+  }
+
+  function guardar() {
+    guardarPreferencias({
+      seleccionados: seleccionados(),
+      tamano: Number(inpTamano.value),
+      patron: selPatron.value,
+      velocidad: velocidadDesdeSlider(Number(inpVelocidad.value)),
+    });
   }
 
   // ── Botones según el estado del reproductor ──
@@ -100,6 +120,7 @@ export function iniciarControles(escena) {
     // Si Stooge obligó a reducir el tamaño, hace falta una lista nueva.
     if (n !== antes) escena.nuevaLista(n, selPatron.value);
     actualizarBotones();
+    guardar();
   }
 
   function marcarTodas(marcar) {
@@ -121,6 +142,7 @@ export function iniciarControles(escena) {
     escena.setVelocidad(pps);
     lblVelocidad.textContent = pps;
   });
+  inpVelocidad.addEventListener('change', guardar);
 
   botones.reproducir.addEventListener('click', () => escena.reproducir());
   botones.pausar.addEventListener('click', () => escena.pausar());
@@ -132,10 +154,12 @@ export function iniciarControles(escena) {
 
   // ── Estado inicial ──
   inpTamano.min = TAMANO_MIN;
-  inpTamano.value = TAMANO_DEFECTO;
-  inpVelocidad.value = sliderDesdeVelocidad(VELOCIDAD_DEFECTO);
-  lblVelocidad.textContent = VELOCIDAD_DEFECTO;
-  escena.setVelocidad(VELOCIDAD_DEFECTO);
+  inpTamano.value = Number.isInteger(prefs.tamano) ? prefs.tamano : TAMANO_DEFECTO;
+  if (Object.values(PATRONES).includes(prefs.patron)) selPatron.value = prefs.patron;
+  inpVelocidad.value = sliderDesdeVelocidad(Number(prefs.velocidad) || VELOCIDAD_DEFECTO);
+  const velocidad = velocidadDesdeSlider(Number(inpVelocidad.value));
+  lblVelocidad.textContent = velocidad;
+  escena.setVelocidad(velocidad);
   escena.setSeleccion(seleccionados());
   nuevaLista();
 

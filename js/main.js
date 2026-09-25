@@ -12,7 +12,8 @@ import { iniciarPestanas } from './ui/pestanas.js';
 import { crearPanelCodigo } from './ui/panelCodigo.js';
 import { crearEscena } from './ui/escena.js';
 import { iniciarControles } from './ui/controles.js';
-import { pintarFicha, pintarLeyenda, pintarResumen } from './ui/ficha.js';
+import { pintarFicha, pintarLeyenda, pintarResumen, pintarTablaAlgoritmos } from './ui/ficha.js';
+import { iniciarAtajos } from './ui/atajos.js';
 import { ESTADOS_REPRODUCTOR } from './motor/reproductor.js';
 import { iniciarBenchmark } from './benchmark/benchmark.js';
 import { dibujarGraficas, pintarTablaBench, limpiarResultados } from './benchmark/graficas.js';
@@ -70,3 +71,7 @@ iniciarBenchmark({
 $('btn-bench-csv').addEventListener('click', () => {
   if (ultimosResultados) descargarCSV(ultimosResultados);
 });
+
+// Bloque 12 — Atajos de teclado y pestaña Algoritmos.
+iniciarAtajos();
+pintarTablaAlgoritmos($('tabla-algoritmos'));

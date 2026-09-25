@@ -60,6 +60,20 @@
   accent-color: var(--acento);
 }
 
+.atajos {
+  color: var(--texto-suave);
+  font-size: 0.75rem;
+}
+
+kbd {
+  padding: 0 var(--esp-1);
+  border: 1px solid var(--borde);
+  border-radius: 4px;
+  background: var(--superficie-2);
+  font-family: var(--fuente-mono);
+  font-size: 0.75rem;
+}
+
 /* ── Avisos ── */
 .aviso {
   padding: var(--esp-2) var(--esp-3);
