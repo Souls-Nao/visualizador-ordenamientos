@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pruebas de algoritmos</title>
+  <title>Pruebas del proyecto</title>
   <link rel="stylesheet" href="css/base.css">
   <style>
     main { max-width: 1000px; margin: 0 auto; padding: 24px; display: grid; gap: 16px; }
@@ -18,7 +18,7 @@
 </head>
 <body>
 <main>
-  <h1>Pruebas de algoritmos y espejo (Bloques 03 y 04)</h1>
+  <h1>Pruebas del proyecto (Bloques 03 a 05)</h1>
   <p>
     Cada algoritmo del registro se ejecuta con varias listas. Los eventos se aplican sobre una copia
     (un "espejo") y el resultado se compara con <code>Array.prototype.sort</code>. Los conteos se
@@ -36,6 +36,8 @@
   import { ALGORITMOS } from './js/algoritmos/index.js';
   import { TIPOS_EVENTO, ESTADOS_COLOR } from './js/core/eventos.js';
   import { crearEspejo, aplicarEvento } from './js/render/espejo.js';
+  import { crearReproductor, velocidadDesdeSlider, sliderDesdeVelocidad } from './js/motor/reproductor.js';
+  import { VELOCIDAD_MIN, VELOCIDAD_MAX, VELOCIDAD_DEFECTO } from './js/config.js';
   import { generarDatos, PATRONES } from './js/core/datos.js';
 
   /*
@@ -136,7 +138,7 @@
     total++;
     if (!ok) fallidas++;
     const fila = filas.insertRow();
-    fila.insertCell().textContent = ALGORITMOS[id].nombre;
+    fila.insertCell().textContent = ALGORITMOS[id]?.nombre ?? id;
     fila.insertCell().textContent = prueba;
     const celda = fila.insertCell();
     celda.className = ok ? 'ok' : 'fallo';
@@ -172,6 +174,82 @@
     const faltan = campos.filter((c) => ALGORITMOS[id][c] === undefined);
     reportar(id, 'El registro tiene todos los campos', faltan.length === 0, `faltan ${faltan}`);
   }
+
+  // ── Bloque 05: reproductor ──
+  const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
+  const R = 'Reproductor';
+
+  reportar(R, `Deslizador: 0 → ${VELOCIDAD_MIN}, 100 → ${VELOCIDAD_MAX} y ${VELOCIDAD_DEFECTO} pasos/s → 39`,
+    velocidadDesdeSlider(0) === VELOCIDAD_MIN && velocidadDesdeSlider(100) === VELOCIDAD_MAX &&
+    sliderDesdeVelocidad(VELOCIDAD_DEFECTO) === 39,
+    `${velocidadDesdeSlider(0)}, ${velocidadDesdeSlider(100)}, ${sliderDesdeVelocidad(VELOCIDAD_DEFECTO)}`);
+
+  {
+    let llamadas = [];
+    let quedan = 2;
+    const r = crearReproductor({ alAvanzar: (n) => { llamadas.push(n); return --quedan > 0; } });
+    r.paso();
+    const tras1 = r.estado;
+    r.paso();
+    const tras2 = r.estado;
+    r.paso();
+    r.reproducir();
+    reportar(R, 'Paso: ejecuta 1 paso y pausa; al terminar ya no avanza ni reproduce',
+      tras1 === 'pausado' && tras2 === 'terminado' && llamadas.join() === '1,1' && r.estado === 'terminado',
+      `estados ${tras1}/${tras2}/${r.estado}, llamadas ${llamadas}`);
+  }
+
+  /*
+   * Reloj simulado: reemplaza requestAnimationFrame y performance.now para
+   * avanzar cuadros a mano. Así la prueba no depende de que la pestaña esté
+   * visible ni de la velocidad de la computadora.
+   */
+  function conRelojSimulado(prueba) {
+    const originales = [window.requestAnimationFrame, window.cancelAnimationFrame, performance.now];
+    let ahora = 0;
+    let pendiente = null;
+    window.requestAnimationFrame = (cb) => { pendiente = cb; return 1; };
+    window.cancelAnimationFrame = () => { pendiente = null; };
+    performance.now = () => ahora;
+    const cuadros = (cantidad, ms) => {
+      for (let k = 0; k < cantidad && pendiente; k++) {
+        ahora += ms;
+        const cb = pendiente;
+        pendiente = null;
+        cb(ahora);
+      }
+    };
+    try {
+      return prueba(cuadros);
+    } finally {
+      [window.requestAnimationFrame, window.cancelAnimationFrame, performance.now] = originales;
+    }
+  }
+
+  for (const pps of [10, 2000]) {
+    conRelojSimulado((cuadros) => {
+      let pasos = 0;
+      const r = crearReproductor({ alAvanzar: (n) => { pasos += n; return true; } });
+      r.setVelocidad(pps);
+      r.reproducir();
+      cuadros(60, 1000 / 60);           // 1 segundo a 60 cuadros por segundo
+      r.pausar();
+      const antes = pasos;
+      cuadros(30, 1000 / 60);
+      reportar(R, `A ${pps} pasos/s ejecuta ${pps} pasos en 1 s y nada después de pausar`,
+               Math.abs(pasos - pps) <= 1 && pasos === antes, `ejecutó ${pasos}, luego ${antes}`);
+    });
+  }
+
+  conRelojSimulado((cuadros) => {
+    let pasos = 0;
+    const r = crearReproductor({ alAvanzar: (n) => { pasos += n; return true; } });
+    r.setVelocidad(2000);
+    r.reproducir();
+    cuadros(1, 5000);                   // un cuadro que llega 5 s tarde (pestaña oculta)
+    reportar(R, 'Un cuadro atrasado 5 s no ejecuta de golpe los pasos atrasados (máx. 100 ms)',
+             pasos === 200, `ejecutó ${pasos}`);
+  });
 
   const resumen = document.getElementById('resumen');
   resumen.textContent = fallidas === 0
