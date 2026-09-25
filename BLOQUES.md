@@ -56,7 +56,7 @@ terminarlo se actualiza su ficha y la bitácora.
 | B05 | Reproductor y velocidad | D-09, D-10 | B00 | H3 | ✅ |
 | B06 | Panel de código y líneas de Python | D-14 | B03 | H4 | ✅ |
 | B07 | Métricas: contadores y mensaje | D-13 | B01 | H3 | ✅ |
-| B08 | Visualizador de un algoritmo | D-12, D-13 (UI) | B02–B07 | H3 | ⬜ |
+| B08 | Visualizador: paneles, escena y controles | D-12, D-13 (UI) | B02–B07 | H3 | ✅ |
 | B09 | Comparación: varios paneles y resumen | D-15, D-16 | B08 | H4 | ⬜ |
 | B10 | Benchmark: versiones fieles y Worker | D-17, D-18 | B02, B03 | H5 | ⬜ |
 | B11 | Benchmark: gráficas, tabla y CSV | D-19, D-24 (CSV) | B10 | H5 | ⬜ |
@@ -148,10 +148,10 @@ Los archivos marcados con ✔ ya existen en el repositorio.
 │   ├── ui/
 │   │   ├── pestanas.js           B00  cambio de sección
 │   │   ├── panelCodigo.js     ✔  B06
-│   │   ├── panelAlgoritmo.js     B08
-│   │   ├── controles.js          B08
-│   │   ├── ficha.js              B08
-│   │   └── escena.js             B09
+│   │   ├── panelAlgoritmo.js  ✔  B08
+│   │   ├── controles.js       ✔  B08
+│   │   ├── ficha.js           ✔  B08
+│   │   └── escena.js          ✔  B08 (B09 le agrega la comparación)
 │   └── benchmark/
 │       ├── fieles.js             B10
 │       ├── worker.js             B10
@@ -255,7 +255,8 @@ Los define B00. Ningún JS usa un ID que no esté aquí; si hace falta uno nuevo
 | `.pestana`, `.pestana--activa` | botones de navegación | B00 |
 | `.oculto` | `display: none` | B00 |
 | `.panel`, `.panel--activo`, `.panel--terminado` | tarjeta de un algoritmo | B00 (estilo), B08 |
-| `.panel__cabecera`, `.panel__titulo`, `.panel__lienzo`, `.panel__contadores`, `.panel__mensaje` | partes del panel | B00, B08 |
+| `.panel__cabecera`, `.panel__titulo`, `.panel__complejidad`, `.panel__lienzo`, `.panel__contadores`, `.panel__mensaje` | partes del panel | B00, B08 |
+| `.casilla` | casilla de selección de algoritmo | B08 |
 | `.codigo`, `.codigo__titulo`, `.codigo__linea`, `.codigo__num`, `.codigo__linea--activa` | panel de código | B00, B06 |
 | `.leyenda__item`, `.leyenda__color` | leyenda | B00, B08 |
 | `.ficha`, `.ficha__tabla` | ficha del algoritmo | B00, B08 |
@@ -533,46 +534,59 @@ métricas del visualizador.
 
 ---
 
-### B08: Visualizador de un algoritmo ⬜
+### B08: Visualizador: paneles, escena y controles ✅
 
-- **Tareas:** D-12, D-13 (UI) · **Depende de:** B00, B02–B07
-- **Archivos:** `js/ui/panelAlgoritmo.js`, `js/ui/controles.js`, `js/ui/ficha.js`
+- **Tareas:** D-12, D-13 (UI) · **Depende de:** B00, B02–B07 · **Commits:** ver bitácora
+- **Archivos:** `js/ui/panelAlgoritmo.js`, `js/ui/escena.js`, `js/ui/controles.js`, `js/ui/ficha.js`,
+  `js/main.js`; `.casilla` y `.panel__complejidad` en CSS; el panel provisional del HTML se quitó.
 
 **Exporta (contrato):**
 ```js
 // panelAlgoritmo.js
-export function crearPanelAlgoritmo({ contenedor, id, lista, alSeleccionar, alCambiarLinea }) {}
+export function crearPanelAlgoritmo({ contenedor, id, lista, alSeleccionar }) {}
 // → { id, avanzar(n) → boolean, reiniciar(lista), setActivo(bool),
-//     get terminado, get contadores, get line, destruir() }
+//     get terminado, get contadores /* copia, forma de B07 */, get linea, destruir() }
+
+// escena.js
+export function crearEscena({ zonaPaneles, panelCodigo, alCambiarEstado, alCambiarActivo }) {}
+// → { setSeleccion(ids), nuevaLista(tamano, patron), reiniciar(), reproducir(), pausar(), paso(),
+//     setVelocidad(pps), seleccionarPanel(id),
+//     get estado /* { listaBase, seleccionados, panelActivo, reproductor, velocidad } */ }
+
+// controles.js
+export function iniciarControles(escena) {}   // → { actualizarBotones() }
+
 // ficha.js
 export function pintarFicha(contenedor, id) {}
-export function pintarLeyenda(contenedor) {}      // generada desde COLORES (B04)
-// controles.js
-export function iniciarControles(escena) {}       // enlaza los IDs de 3.3 con la escena
+export function pintarLeyenda(contenedor) {}
 ```
-**Estado de la aplicación** (vive en la escena; en B08 con un solo panel):
-```js
-{ listaBase: [], tamano: TAMANO_DEFECTO, patron: 'aleatoria',
-  seleccionados: ['bubble'], panelActivo: 'bubble', velocidad: VELOCIDAD_DEFECTO }
-```
-**Criterio:** los 8 se animan hasta terminar con barras verdes; "Reiniciar" repite la misma lista.
+**Reglas:**
+- Un solo reproductor para todos los paneles; `alAvanzar(n)` avanza cada panel no terminado y
+  devuelve false cuando todos terminaron.
+- Cada panel dibuja **una vez por cuadro**, no por evento.
+- `setSeleccion` conserva la lista; `nuevaLista` genera otra; `reiniciar` usa la misma.
+- Con Stooge seleccionado el máximo del tamaño baja a `LIMITE_STOOGE_VISUAL` y se muestra
+  `#lbl-aviso`.
+- Botones: Reproducir se desactiva al reproducir o terminar; Pausar solo activo al reproducir; Paso
+  se desactiva al terminar; Reiniciar siempre activo si hay paneles.
+**Verificación:** 2 pruebas nuevas en `test.html` (70/70) y flujo completo probado en la página:
+selección, paso a paso, reinicio, varios paneles, cambio de panel activo, límite de Stooge y final.
 
 ---
 
 ### B09: Comparación: varios paneles y resumen ⬜
 
 - **Tareas:** D-15, D-16 · **Depende de:** B08
-- **Archivos:** `js/ui/escena.js`
+- **Archivos:** amplía `js/ui/escena.js` y `js/ui/controles.js` (la escena base ya existe desde B08)
 
 **Exporta (contrato):**
 ```js
-export function crearEscena({ zonaPaneles, panelCodigo, alTerminarTodos, alCambiarActivo }) {}
-// → { setSeleccion(ids), nuevaLista(tamano, patron), reiniciar(), reproducir(), pausar(), paso(),
-//     setVelocidad(pps), seleccionarPanel(id), get estado, get resumen }
+// escena.js agrega: opción alTerminarTodos y  get resumen
 // resumen: [{ id, nombre, comparaciones, movimientos, pasos, llegada }]
 export function pintarResumen(tabla, resumen) {}
 ```
-- Todos los paneles reciben una copia de la **misma** `listaBase` y avanzan con el mismo reproductor.
+- Ya resuelto en B08: misma `listaBase` para todos, un reproductor común y varios paneles.
+- Falta: botones Todos / Ninguno, orden de llegada, tabla resumen y ajuste del grid.
 **Criterio:** con 1, 3 u 8 algoritmos aparecen esos paneles; terminan en momentos distintos y el
 resumen muestra valores correctos.
 
@@ -644,6 +658,7 @@ export function descargarCSV(resultados, nombre = 'benchmark.csv') {}
 |---|---|---|---|---|
 | 25/09/2026 | B01 | `line` pasa de "línea de `ordenamientos.py`" a "línea 1-indexada dentro de `ALGORITMOS[id].fuente`" | Merge y Quick muestran una versión adaptada, y cada panel muestra solo su algoritmo | B03 (todas las líneas), `docs/eventos.md`; B06 aún no existía |
 | 25/09/2026 | B03 | `ALGORITMOS[id]` agrega `fuente` y `categoria`; `fuentesPython.js` pasa de B06 a B03 | Sin la fuente no se podían fijar las líneas correctas; `categoria` la usan B10 y B11 | B06 (ficha ajustada, aún sin código) |
+| 25/09/2026 | B08 | `escena.js` pasa de B09 a B08 (escena base con varios paneles); B09 solo agrega la comparación | Los controles de B08 necesitan una escena y un bucle sobre N paneles no cuesta más que uno | B09 (ficha ajustada, aún sin código) |
 
 ---
 
@@ -684,7 +699,8 @@ export function descargarCSV(resultados, nombre = 'benchmark.csv') {}
 | 25/09/2026 | B04 | Espejo y canvas de barras; test.html usa el espejo; bloque cerrado ✅ | `e5c09d3`, `b276288` | — |
 | 25/09/2026 | B05 | Reproductor con acumulador y velocidad logarítmica; bloque cerrado ✅ | `ced8bc9`, `64301cb` | — |
 | 25/09/2026 | B06 | Panel de código con línea activa y prueba de correspondencia; bloque cerrado ✅ | `5be5472`, `0545a9a` | — |
-| 25/09/2026 | B07 | Contadores y mensajes de estado; bloque cerrado ✅ | ver `git log --grep B07` | B08 (visualizador de un algoritmo) |
+| 25/09/2026 | B07 | Contadores y mensajes de estado; bloque cerrado ✅ | `ed31e6a`, `1243663` | — |
+| 25/09/2026 | B08 | Panel de algoritmo, escena, controles, ficha y leyenda; visualizador funcional; bloque cerrado ✅ | ver `git log --grep B08` | B09 (comparación) |
 
 ---
 

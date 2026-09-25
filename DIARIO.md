@@ -6,6 +6,46 @@ La entrada más reciente va arriba.
 
 ---
 
+## 25/09/2026 · B08: Visualizador funcional
+
+**Archivos:** `js/ui/panelAlgoritmo.js`, `js/ui/escena.js`, `js/ui/controles.js`, `js/ui/ficha.js`,
+`js/main.js`. Desde aquí la página ya anima los algoritmos.
+
+**Cómo se conectan las piezas** (pregunta típica: "¿cómo funciona la visualización?"):
+1. `controles.js` lee los botones y deslizadores y llama a la escena.
+2. `escena.js` guarda la lista base, crea un panel por algoritmo marcado y tiene **un solo
+   reproductor**. En cada cuadro, el reproductor pide `n` pasos y la escena los reparte:
+   `panel.avanzar(n)` en cada panel que no haya terminado.
+3. `panelAlgoritmo.js`, por cada paso: pide un evento al generador, arma el mensaje, lo aplica al
+   espejo y lo suma a los contadores. Al final del cuadro dibuja **una sola vez** el canvas y los
+   números. Dibujar por evento sería desperdicio: a 2000 pasos/s serían 33 dibujos por cuadro.
+4. La escena resalta en el panel de código la línea del último evento del panel activo.
+
+**Mismos datos (requisito 9).** `listaBase` vive en la escena y nunca se modifica; cada panel
+recibe la lista y su generador trabaja sobre una copia. "Reiniciar" usa la misma lista y
+"Nueva lista" genera otra.
+
+**Por qué la escena se adelantó de B09 a B08.** Los controles necesitan una escena, y hacerla para
+N paneles es el mismo código que para uno (un `for`). B09 solo agrega lo propio de la comparación:
+Todos/Ninguno, orden de llegada y tabla resumen. Registrado como cambio de contrato.
+
+**Stooge Sort.** Con n = 120 haría millones de pasos. Mientras está marcado, el máximo del
+deslizador baja a 30 y se muestra un aviso con el motivo.
+
+**Botones.** Se habilitan según el estado del reproductor (B05): no se puede reproducir si ya
+terminó (hay que reiniciar) y Pausar solo se activa mientras se reproduce.
+
+**Ficha y leyenda.** La ficha muestra nombre, complejidad (mejor, promedio y peor), espacio,
+estabilidad y descripción del algoritmo activo (requisitos 7 y 8). Cada panel muestra también su
+complejidad promedio junto al título. La leyenda se genera desde `COLORES`.
+
+**Pruebas (70/70).** Cada uno de los 8 paneles corre hasta el final de 7 en 7 pasos y sus
+contadores (y los números en pantalla) coinciden con `contarEjecucion`; reiniciar vuelve a cero.
+Otra prueba lee `index.html` y comprueba que las opciones de patrón coincidan con `PATRONES`. El
+flujo completo se probó en la página con los botones reales.
+
+---
+
 ## 25/09/2026 · B07: Métricas
 
 **Archivo:** `js/core/metricas.js`. Es **el único lugar donde se calculan las métricas** (pregunta
