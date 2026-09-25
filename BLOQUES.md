@@ -162,6 +162,7 @@ Los archivos marcados con ✔ ya existen en el repositorio.
 └── docs/
     ├── eventos.md             ✔  B01
     ├── referencia/               B00  ordenamientos.py, benchmark.py, main.py originales
+    │   └── conteos.py            B03  conteos esperados de test.html
     ├── pruebas.md                B07  (opcional: los conteos ya se prueban en test.html)
     ├── boceto/                       entregable 1
     └── capturas/                 B13
@@ -394,30 +395,42 @@ export const ALGORITMOS = {            // congelado; el orden de las claves es e
 - Cada archivo define `const LINEA = { COMPARAR: 7, ... }` con las líneas de su fuente que usa.
   Si se edita una fuente, se revisan esas constantes (`test.html` detecta líneas fuera de rango).
 - Solo se emite `sorted` cuando el algoritmo realmente fija una posición (Selection, Bubble,
-  Exchange y Quick). Los demás dejan que `done` marque todo al final (B04).
+  Exchange y Quick). Los demás, y Bubble cuando termina antes, dejan que `done` marque todo (B04).
 
-**Fidelidad con `docs/referencia/ordenamientos.py`:**
+**Relación con la práctica (`docs/referencia/ordenamientos.py`):** la práctica es la base; en JS se
+cambió solo lo que mejora el visualizador. El código Python que se muestra en pantalla
+(`FUENTES_PYTHON`) incluye esos cambios, así que lo que se anima es exactamente lo que se lee.
 
-| ID | Relación con el original | Conteos iguales a Python |
+| ID | Respecto a la práctica | Por qué |
 |---|---|---|
-| `selection` | Traducción exacta: `range(n-1)` e intercambio siempre, aunque `min_idx == i` | ✔ |
-| `bubble` | Traducción exacta: n pasadas completas, sin salida temprana | ✔ |
-| `insertion` | Traducción exacta: desplaza con escrituras y luego escribe la clave | ✔ |
-| `gnome` | Traducción exacta, con el cortocircuito de `i == 0` | ✔ |
-| `exchange` | Traducción exacta: compara `arr[j] < arr[i]` | ✔ |
-| `stooge` | Traducción exacta, recursión con `yield*` | ✔ |
-| `merge` | Misma lógica con índices `lo`/`hi` sobre un solo arreglo; mismo punto de corte y mismo `<` | ✔ |
-| `quick` | Versión en el lugar con la misma idea: pivote al centro y tres grupos (`<`, `==`, `>`) | ✘ por diseño; el fiel está en B10 |
+| `selection` | Solo intercambia si `min_idx != i` | No animar ni contar el intercambio de una barra consigo misma |
+| `bubble` | Recorre hasta `n - 1 - i` y termina si una pasada no intercambia | No volver a comparar barras ya fijas; mejor caso O(n) |
+| `insertion` | Igual | — |
+| `gnome` | Igual (con el cortocircuito de `i == 0`) | — |
+| `exchange` | Igual | — |
+| `stooge` | Igual (recursión con `yield*`) | — |
+| `merge` | Índices `lo`/`hi` sobre un solo arreglo y `<=` en lugar de `<` | Dibujarlo como una fila de barras; que sea estable |
+| `quick` | En el lugar: pivote al centro y tres grupos (`<`, `==`, `>`) | La versión con listas nuevas no se puede dibujar sobre un arreglo |
 
-**Verificación (25/09/2026):** `test.html` ejecuta 37 pruebas: 27 listas por algoritmo (vacía, 1 y 2
-elementos, todos iguales, duplicados, ordenada, invertida y 5 aleatorias de cada patrón), contrato
-de eventos (`line` en rango, índices válidos, `done` al final, entrada sin modificar), registro
-completo y conteos idénticos a Python en 3 listas fijas (con n = 5 invertida: Bubble 20, Selection 10 y
-Exchange 10 comparaciones, criterio de T-02). Todas pasan en 10 cargas seguidas.
+El benchmark (B10) usa las funciones originales de la práctica, sin estos cambios.
+
+**Verificación (25/09/2026):** `docs/referencia/conteos.py` lee `fuentesPython.js`, ejecuta ese
+Python tal cual y cuenta comparaciones y escrituras (un intercambio = 2 escrituras) en 4 listas
+fijas. `test.html` ejecuta 48 pruebas, 6 por algoritmo:
+- ordena 27 listas (vacía, 1 y 2 elementos, todos iguales, duplicados, ordenada, invertida y 5
+  aleatorias de cada patrón) respetando el contrato de eventos (`line` en rango, índices válidos,
+  `done` al final, entrada sin modificar);
+- hace **las mismas comparaciones y escrituras que el Python mostrado** en las 4 listas fijas
+  (los 8 algoritmos, incluido Quick);
+- el registro tiene todos los campos.
+
+Todas pasan en 11 cargas seguidas. Si se cambia una fuente: actualizar el generador, correr
+`python docs/referencia/conteos.py` y pegar su salida en `test.html`.
 
 **Decisiones / notas:**
-- `merge.estable = 'No'`: el original compara con `<`, así que ante un empate toma primero el de la
-  derecha. Con `<=` sería estable, pero ya no sería fiel a la práctica.
+- El criterio original de T-02 ("con n = 5: Bubble 20, Selection 10, Exchange 10") suponía el Bubble
+  sin salida temprana. Con la mejora, Bubble hace 10 comparaciones con n = 5 invertida; el criterio
+  queda sustituido por "mismos conteos que el Python mostrado".
 - En Merge, al comparar se resaltan `lo + i` y `mid + j` (de dónde salieron los valores); la barra
   de la izquierda puede estar ya sobrescrita, porque el valor real está en la copia `izquierda`.
 - En Quick, el pivote puede moverse durante la partición: los eventos `compare` siempre apuntan a su
@@ -509,7 +522,8 @@ export function contarEjecucion(generador) {}     // recorre un generador comple
 ```
 **Aquí y solo aquí** se calculan las métricas del visualizador.
 **Criterio:** `test.html` usa `contarEjecucion` en lugar de su contador interno y los conteos de
-Python (ya fijados en B03) siguen pasando.
+B03 siguen pasando (ojo: B03 cuenta escrituras, con un intercambio = 2; B07 cuenta movimientos,
+con un intercambio = 1).
 
 ---
 
@@ -659,7 +673,8 @@ export function descargarCSV(resultados, nombre = 'benchmark.csv') {}
 | 25/09/2026 | — | BLOQUES.md alineado con el código existente; se elimina el volcado de git config | `049dc70`, `ccd423b` | B00 |
 | 25/09/2026 | B00 | Estructura, `config.js`, pestañas, maqueta completa, `.py` de referencia | `4c0ce68`, `80e2772` | — |
 | 25/09/2026 | B00 | Publicación en GitHub Pages verificada; bloque cerrado ✅ | `877c9b4` | — |
-| 25/09/2026 | B03 | Generadores fieles a Python, `fuentesPython.js`, registro corregido y `test.html` con 37 pruebas; bloque cerrado ✅ | ver `git log --grep B03` | B04 (espejo y canvas) |
+| 25/09/2026 | B03 | Generadores traducidos de Python, `fuentesPython.js`, registro corregido y `test.html` con 37 pruebas | `980af8b`, `1f39d47`, `ae40eea` | — |
+| 25/09/2026 | B03 | Mejoras para el visualizador (Selection, Bubble, Merge), `conteos.py` y 48 pruebas contra el Python mostrado; bloque cerrado ✅ | ver `git log --grep B03` | B04 (espejo y canvas) |
 
 ---
 

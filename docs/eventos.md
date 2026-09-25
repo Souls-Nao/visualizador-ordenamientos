@@ -40,8 +40,8 @@ mantiene su propio espejo del arreglo** y lo actualiza aplicando la operación:
 
 `line` es el número de línea, contando desde 1, dentro de la fuente Python de su algoritmo
 (`FUENTES_PYTHON[id]` en `js/algoritmos/fuentesPython.js`, también disponible como
-`ALGORITMOS[id].fuente`). Las fuentes de los 6 algoritmos de fuerza bruta son copia exacta de
-`ordenamientos.py`; Merge y Quick usan versiones sobre un solo arreglo. Lo usa el panel de código
+`ALGORITMOS[id].fuente`). Las fuentes parten de `ordenamientos.py`, con los ajustes para el
+visualizador descritos en la ficha de B03 de `BLOQUES.md`. Lo usa el panel de código
 (Bloque 06) para resaltar la línea activa, y `test.html` verifica que ninguna quede fuera de rango.
 
 ## Estados de color
