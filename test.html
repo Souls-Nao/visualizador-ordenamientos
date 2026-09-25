@@ -18,7 +18,7 @@
 </head>
 <body>
 <main>
-  <h1>Pruebas de los algoritmos (Bloque 03)</h1>
+  <h1>Pruebas de algoritmos y espejo (Bloques 03 y 04)</h1>
   <p>
     Cada algoritmo del registro se ejecuta con varias listas. Los eventos se aplican sobre una copia
     (un "espejo") y el resultado se compara con <code>Array.prototype.sort</code>. Los conteos se
@@ -34,7 +34,8 @@
 
 <script type="module">
   import { ALGORITMOS } from './js/algoritmos/index.js';
-  import { TIPOS_EVENTO } from './js/core/eventos.js';
+  import { TIPOS_EVENTO, ESTADOS_COLOR } from './js/core/eventos.js';
+  import { crearEspejo, aplicarEvento } from './js/render/espejo.js';
   import { generarDatos, PATRONES } from './js/core/datos.js';
 
   /*
@@ -59,18 +60,20 @@
   const TAMANO_MAX_PRUEBA = { stooge: 25 };
 
   /**
-   * Ejecuta un generador completo aplicando sus eventos sobre un espejo.
-   * Devuelve el espejo final, los conteos y los problemas de forma encontrados.
+   * Ejecuta un generador completo aplicando sus eventos sobre un espejo
+   * (Bloque 04). Devuelve los valores finales, si todas las barras quedaron
+   * en verde, los conteos y los problemas de forma encontrados.
    */
   function ejecutar(id, lista) {
     const { generador, fuente } = ALGORITMOS[id];
-    const espejo = [...lista];
+    const espejo = crearEspejo(lista);
     const conteo = { comparaciones: 0, escrituras: 0 };
     const problemas = [];
     const eventos = [...generador(lista)];
 
     eventos.forEach((evento, posicion) => {
       const esUltimo = posicion === eventos.length - 1;
+      aplicarEvento(espejo, evento);
 
       if (evento.type === TIPOS_EVENTO.TERMINADO) {
         if (!esUltimo) problemas.push(`done en la posición ${posicion}, no al final`);
@@ -87,21 +90,18 @@
         case TIPOS_EVENTO.COMPARAR:
           conteo.comparaciones++;
           break;
-        case TIPOS_EVENTO.INTERCAMBIAR: {
-          const [i, j] = evento.indices;
-          [espejo[i], espejo[j]] = [espejo[j], espejo[i]];
+        case TIPOS_EVENTO.INTERCAMBIAR:
           conteo.escrituras += 2;
           break;
-        }
         case TIPOS_EVENTO.ESCRIBIR:
-          espejo[evento.indices[0]] = evento.value;
           conteo.escrituras++;
           break;
       }
     });
 
     if (eventos.at(-1)?.type !== TIPOS_EVENTO.TERMINADO) problemas.push('el último evento no es done');
-    return { espejo, conteo, problemas };
+    const verde = espejo.terminado && espejo.estados.every((e) => e === ESTADOS_COLOR.ORDENADO);
+    return { valores: espejo.valores, verde, conteo, problemas };
   }
 
   const ordenar = (lista) => [...lista].sort((a, b) => a - b);
@@ -148,12 +148,13 @@
     const errores = [];
     for (const [nombre, lista] of casos(id)) {
       const original = [...lista];
-      const { espejo, problemas } = ejecutar(id, lista);
-      if (!iguales(espejo, ordenar(original))) errores.push(`${nombre}: resultado ${espejo.join(',')}`);
+      const { valores, verde, problemas } = ejecutar(id, lista);
+      if (!iguales(valores, ordenar(original))) errores.push(`${nombre}: resultado ${valores.join(',')}`);
+      if (!verde) errores.push(`${nombre}: el espejo no terminó con todas las barras en verde`);
       if (!iguales(lista, original)) errores.push(`${nombre}: modificó la lista de entrada`);
       if (problemas.length) errores.push(`${nombre}: ${problemas[0]}`);
     }
-    reportar(id, 'Ordena 27 listas (casos borde y 4 patrones) y respeta el contrato de eventos',
+    reportar(id, 'Ordena 27 listas (casos borde y 4 patrones), respeta el contrato de eventos y el espejo termina en verde',
              errores.length === 0, errores.slice(0, 3).join(' · '));
 
     // 2) Mismas comparaciones y escrituras que el código Python mostrado.
