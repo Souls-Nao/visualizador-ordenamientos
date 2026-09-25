@@ -53,7 +53,7 @@ terminarlo se actualiza su ficha y la bitácora.
 | B02 | Generación de datos | D-11 | — | H3 | ✅ |
 | B03 | Algoritmos generadores y registro | D-05, D-06, D-07, T-01, T-02 | B01 | H2 | ✅ |
 | B04 | Render: espejo y barras en canvas | D-08 | B01 | H3 | ✅ |
-| B05 | Reproductor y velocidad | D-09, D-10 | B00 | H3 | ⬜ |
+| B05 | Reproductor y velocidad | D-09, D-10 | B00 | H3 | ✅ |
 | B06 | Panel de código y líneas de Python | D-14 | B03 | H4 | ⬜ |
 | B07 | Métricas: contadores y mensaje | D-13 | B01 | H3 | ⬜ |
 | B08 | Visualizador de un algoritmo | D-12, D-13 (UI) | B02–B07 | H3 | ⬜ |
@@ -144,7 +144,7 @@ Los archivos marcados con ✔ ya existen en el repositorio.
 │   │   ├── espejo.js          ✔  B04  estado de las barras (lógica pura)
 │   │   └── canvasBarras.js    ✔  B04  dibujo en canvas y COLORES
 │   ├── motor/
-│   │   └── reproductor.js        B05
+│   │   └── reproductor.js     ✔  B05
 │   ├── ui/
 │   │   ├── pestanas.js           B00  cambio de sección
 │   │   ├── panelCodigo.js        B06
@@ -471,24 +471,24 @@ ordenados y todas las barras en verde (48/48). Canvas probado con Quick Sort a m
 
 ---
 
-### B05: Reproductor y velocidad ⬜
+### B05: Reproductor y velocidad ✅
 
-- **Tareas:** D-09, D-10 · **Depende de:** B00 (`config.js`)
-- **Objetivo:** reloj con `requestAnimationFrame` que decide cuántos pasos tocan en cada cuadro.
-
-**Archivos:** `js/motor/reproductor.js`
+- **Tareas:** D-09, D-10 · **Depende de:** B00 (`config.js`) · **Commits:** ver bitácora
+- **Archivos:** `js/motor/reproductor.js`
 
 **Exporta (contrato):**
 ```js
+export const ESTADOS_REPRODUCTOR = { DETENIDO:'detenido', REPRODUCIENDO:'reproduciendo',
+                                     PAUSADO:'pausado', TERMINADO:'terminado' };
 export function crearReproductor({ alAvanzar, alCambiarEstado }) {}
-// alAvanzar(n) → boolean (true = queda trabajo) · alCambiarEstado('detenido'|'reproduciendo'|'pausado'|'terminado')
+// alAvanzar(n) → boolean (true = queda trabajo) · alCambiarEstado(estado)
 // → { reproducir(), pausar(), paso(), detener(), setVelocidad(pps), get estado, get velocidad }
-export function velocidadDesdeSlider(t) {}   // t ∈ [0,100] → pasos/s en escala logarítmica
+export function velocidadDesdeSlider(t) {}   // t ∈ [0,100] → pps, escala logarítmica 1–2000
 export function sliderDesdeVelocidad(pps) {}
 ```
-- Acumulador: `acumulado += dt * velocidad / 1000; n = Math.floor(acumulado); acumulado -= n`, con
-  `n ≤ MAX_PASOS_POR_CUADRO`.
-**Criterio:** a 1–5 pasos/s se sigue cada operación; a 500 o más termina en segundos sin trabar la página.
+**Reglas:** `paso()` pausa y ejecuta 1 · en `terminado` no reproduce ni avanza hasta `detener()` ·
+máx. 100 ms por cuadro y `MAX_PASOS_POR_CUADRO` pasos por cuadro · `setVelocidad` recorta al rango.
+**Verificación:** 5 pruebas en `test.html` con reloj simulado (53/53 en total).
 
 ---
 
@@ -675,7 +675,8 @@ export function descargarCSV(resultados, nombre = 'benchmark.csv') {}
 | 25/09/2026 | B00 | Publicación en GitHub Pages verificada; bloque cerrado ✅ | `877c9b4` | — |
 | 25/09/2026 | B03 | Generadores traducidos de Python, `fuentesPython.js`, registro corregido y `test.html` con 37 pruebas | `980af8b`, `1f39d47`, `ae40eea` | — |
 | 25/09/2026 | B03 | Mejoras para el visualizador (Selection, Bubble, Merge), `conteos.py` y 48 pruebas contra el Python mostrado; bloque cerrado ✅ | `3e5bfe9`, `4b10024` | — |
-| 25/09/2026 | B04 | Espejo y canvas de barras; test.html usa el espejo; bloque cerrado ✅ | ver `git log --grep B04` | B05 (reproductor) |
+| 25/09/2026 | B04 | Espejo y canvas de barras; test.html usa el espejo; bloque cerrado ✅ | `e5c09d3`, `b276288` | — |
+| 25/09/2026 | B05 | Reproductor con acumulador y velocidad logarítmica; bloque cerrado ✅ | ver `git log --grep B05` | B06 (panel de código) |
 
 ---
 

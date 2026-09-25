@@ -6,6 +6,38 @@ La entrada más reciente va arriba.
 
 ---
 
+## 25/09/2026 · B05: Reproductor y velocidad
+
+**Archivo:** `js/motor/reproductor.js`.
+
+**Qué hace.** Es el reloj de la animación. En cada cuadro de `requestAnimationFrame` calcula cuántos
+pasos tocan y llama a `alAvanzar(n)`. No sabe qué es un paso: B08 y B09 deciden qué hacer con ellos
+(pedir eventos al generador y dibujar una sola vez por cuadro).
+
+**Acumulador.** `acumulado += dt × velocidad / 1000`; se ejecuta la parte entera y se guarda el
+resto. Ejemplo: a 10 pasos/s y 60 cuadros/s, cada cuadro suma 0.167 y cada 6 cuadros toca un paso.
+A 2000 pasos/s tocan ~33 por cuadro. Así no hace falta `setTimeout` y la velocidad es exacta.
+
+**Protecciones.**
+- Si la pestaña estuvo oculta, el siguiente cuadro llega tarde; se toman como máximo 100 ms por
+  cuadro para no ejecutar de golpe miles de pasos atrasados.
+- `MAX_PASOS_POR_CUADRO` (5000) evita congelar la página.
+
+**Velocidad logarítmica.** El deslizador va de 0 a 100 y se convierte con
+`pps = 1 × 2000^(t/100)`. Con una escala lineal casi todo el recorrido serían velocidades rápidas;
+así la mitad del deslizador cubre de 1 a ~45 pasos/s, donde se sigue cada operación. El valor
+inicial del HTML (39) corresponde a 20 pasos/s.
+
+**Estados.** detenido → reproduciendo ⇄ pausado → terminado. `paso()` siempre deja en pausa.
+Cuando `alAvanzar` devuelve false, pasa a terminado y ya no avanza hasta `detener()` (Reiniciar).
+
+**Pruebas.** El navegador no ejecuta `requestAnimationFrame` si la pestaña está oculta, así que las
+pruebas usan un reloj simulado: reemplazan `requestAnimationFrame` y `performance.now` y avanzan
+cuadros a mano. Comprueban: el deslizador en los extremos, `paso()`, 10 y 2000 pasos exactos en 1 s,
+que no avance tras pausar y el límite de 100 ms. 53/53 pruebas pasan.
+
+---
+
 ## 25/09/2026 · B04: Render (espejo y barras en canvas)
 
 **Archivos:** `js/render/espejo.js`, `js/render/canvasBarras.js`, `test.html`.
