@@ -58,7 +58,7 @@ terminarlo se actualiza su ficha y la bitácora.
 | B07 | Métricas: contadores y mensaje | D-13 | B01 | H3 | ✅ |
 | B08 | Visualizador: paneles, escena y controles | D-12, D-13 (UI) | B02–B07 | H3 | ✅ |
 | B09 | Comparación: varios paneles y resumen | D-15, D-16 | B08 | H4 | ✅ |
-| B10 | Benchmark: versiones fieles y Worker | D-17, D-18 | B02, B03 | H5 | ⬜ |
+| B10 | Benchmark: versiones fieles y Worker | D-17, D-18 | B02, B03 | H5 | ✅ |
 | B11 | Benchmark: gráficas, tabla y CSV | D-19, D-24 (CSV) | B10 | H5 | ⬜ |
 | B12 | Pulido, pestañas y extras | D-20, D-23, D-24 | B09, B11 | H5 | ⬜ |
 | B13 | Documentación, pruebas finales y entrega | D-21, T-03, D-22, E-01 | todos | H5–H6 | ⬜ |
@@ -153,9 +153,9 @@ Los archivos marcados con ✔ ya existen en el repositorio.
 │   │   ├── ficha.js           ✔  B08
 │   │   └── escena.js          ✔  B08 (B09 le agrega la comparación)
 │   └── benchmark/
-│       ├── fieles.js             B10
-│       ├── worker.js             B10
-│       ├── benchmark.js          B10
+│       ├── fieles.js          ✔  B10
+│       ├── worker.js          ✔  B10
+│       ├── benchmark.js       ✔  B10
 │       ├── graficas.js           B11
 │       └── csv.js                B11
 ├── vendor/
@@ -602,22 +602,34 @@ botones desactivados, 3 algoritmos → resumen en orden, Reiniciar lo oculta.
 
 ---
 
-### B10: Benchmark: versiones fieles y Worker ⬜
+### B10: Benchmark: versiones fieles y Worker ✅
 
-- **Tareas:** D-17, D-18 · **Depende de:** B02, B03
-- **Archivos:** `js/benchmark/fieles.js`, `js/benchmark/worker.js`, `js/benchmark/benchmark.js`
+- **Tareas:** D-17, D-18 · **Depende de:** B00 (`config.js`), B02 · **Commits:** ver bitácora
+- **Archivos:** `js/benchmark/fieles.js`, `js/benchmark/worker.js`, `js/benchmark/benchmark.js`;
+  en `index.html` el aviso JS/Python se separó de `#bench-mensaje`.
 
 **Exporta (contrato):**
 ```js
-export const FIELES = { selection: fn, ..., quick: fn };   // fn(lista) → nueva lista ordenada (traducción de ordenamientos.py)
-export function iniciarBenchmark() {}
-export function validarConfig(datos) {}   // reglas de main.py → { ok, errores: string[], config }
-```
-**Protocolo del Worker:** página → `{ tipo:'iniciar', config:{ inicio, incremento, fin, repeticiones, patron, algoritmos } }` ·
-worker → `{ tipo:'progreso', hecho, total }` · `{ tipo:'fin', resultados }` · `{ tipo:'error', mensaje }` · cancelar = `worker.terminate()`.
+// fieles.js — traducción directa de ordenamientos.py, sin las mejoras del visualizador
+export const FIELES = { selection: fn, ..., quick: fn };   // fn(lista) → lista nueva ordenada
 
-**`resultados`:** `{ tamanos:number[], patron, repeticiones, tiempos:{ id:(ms|null)[] }, omitidos:{ id:motivo } }`
-**Criterio:** de 100 a 500 de 100 en 100 devuelve los 8 tiempos, con progreso y sin congelar la página.
+// benchmark.js
+export function validarConfig(datos) {}   // → { ok, errores: string[], config }
+export function iniciarBenchmark({ alTerminar, alIniciar }) {}
+```
+**Protocolo del Worker** (`new Worker(new URL('./worker.js', import.meta.url), { type: 'module' })`):
+recibe `{ tipo:'iniciar', config:{ inicio, incremento, fin, repeticiones, patron } }` · envía
+`{ tipo:'progreso', hecho, total }`, `{ tipo:'fin', resultados }` o `{ tipo:'error', mensaje }` ·
+cancelar = `worker.terminate()`.
+
+**`resultados`** (lo consume B11):
+`{ tamanos:number[], patron, repeticiones, tiempos:{ id:(ms|null)[] }, omitidos:{ id:motivo } }`
+
+**Reglas:** una lista por tamaño y una copia por algoritmo (como `benchmark.py`) · 1 calentamiento
+descartado + mediana de `repeticiones` · Stooge se omite (null) con n > `LIMITE_STOOGE_BENCH` ·
+validación: enteros, inicio ≥ 1, incremento > 0, inicio ≤ fin, 1–20 repeticiones, máx. 100 tamaños.
+**Verificación:** 3 pruebas nuevas (75/75); en la página, 100→500 de 100 en 100 terminó en 1 s sin
+congelar la interfaz, y Cancelar detiene una medición larga.
 
 ---
 
@@ -711,7 +723,8 @@ export function descargarCSV(resultados, nombre = 'benchmark.csv') {}
 | 25/09/2026 | B06 | Panel de código con línea activa y prueba de correspondencia; bloque cerrado ✅ | `5be5472`, `0545a9a` | — |
 | 25/09/2026 | B07 | Contadores y mensajes de estado; bloque cerrado ✅ | `ed31e6a`, `1243663` | — |
 | 25/09/2026 | B08 | Panel de algoritmo, escena, controles, ficha y leyenda; visualizador funcional; bloque cerrado ✅ | `ea89650`, `8601b6f` | — |
-| 25/09/2026 | B09 | Orden de llegada, tabla resumen, Todos / Ninguno; bloque cerrado ✅ | ver `git log --grep B09` | B10 (benchmark) |
+| 25/09/2026 | B09 | Orden de llegada, tabla resumen, Todos / Ninguno; bloque cerrado ✅ | `e9a1b62`, `89f60ed` | — |
+| 25/09/2026 | B10 | Versiones fieles, Web Worker, validación y progreso del benchmark; bloque cerrado ✅ | ver `git log --grep B10` | B11 (gráficas y tabla) |
 
 ---
 

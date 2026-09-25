@@ -6,6 +6,39 @@ La entrada más reciente va arriba.
 
 ---
 
+## 25/09/2026 · B10: Benchmark (medición)
+
+**Archivos:** `js/benchmark/fieles.js`, `worker.js`, `benchmark.js`.
+
+**Versiones fieles.** El visualizador usa algoritmos mejorados y con eventos; el benchmark mide la
+práctica tal cual. `fieles.js` es la traducción directa de `ordenamientos.py`: Bubble sin salida
+temprana, Selection que intercambia siempre, Merge con sublistas y Quick con tres listas nuevas
+(`filter`). Son funciones normales, sin generadores, para que el tiempo medido sea solo el del
+algoritmo.
+
+**Web Worker.** Medir listas grandes puede tardar segundos; en el hilo principal la página se
+congelaría. `worker.js` corre en otro hilo y se comunica por mensajes: recibe la configuración y
+envía el progreso después de cada medición y los resultados al final. Cancelar es simplemente
+`worker.terminate()`.
+
+**Cómo se mide** (pregunta típica: "¿dónde se calcula el tiempo?", respuesta: `medirUnaVez` en
+`worker.js`):
+- Igual que `calcular_tiempos`: una lista por tamaño y cada algoritmo ordena una copia.
+- Una ejecución de calentamiento que se descarta: el motor de JavaScript optimiza las funciones
+  después de las primeras llamadas y la primera sería injustamente lenta.
+- Varias repeticiones con `performance.now()` y se guarda la **mediana**, que no se altera por una
+  medición suelta más lenta.
+- Stooge se omite con más de 500 elementos (tardaría minutos) y se avisa.
+
+**Validación.** Las reglas de `main.py` (enteros, incremento > 0, inicio ≤ fin) más límites de la
+página: inicio ≥ 1, 1 a 20 repeticiones y como máximo 100 tamaños.
+
+**Pruebas (75/75).** Las 8 versiones fieles ordenan las 27 listas; 7 casos de validación; y el
+Worker real mide 3 tamaños × 8 algoritmos con 24 mensajes de progreso. En la página, de 100 a 500
+tardó 1 s sin congelar la interfaz, y Cancelar detuvo una medición de 1000 a 10000.
+
+---
+
 ## 25/09/2026 · B09: Comparación
 
 **Archivos:** `escena.js`, `controles.js`, `ficha.js`, `main.js` (se amplían).
