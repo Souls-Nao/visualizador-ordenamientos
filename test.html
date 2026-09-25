@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Tests de Algoritmos - Bloque 03</title>
+</head>
+<body>
+  <h1>Pruebas de generadores vs Array.prototype.sort</h1>
+  <div id="resultados"></div>
+
+  <script type="module">
+    import { ALGORITMOS } from './js/algoritmos/index.js';
+    import { TIPOS_EVENTO } from './js/core/eventos.js';
+
+    const testArray = [45, 12, 89, 33, 1, 9, 22, 100, 50, 77];
+    const arrayEsperado = [...testArray].sort((a, b) => a - b);
+    const divResultados = document.getElementById('resultados');
+
+    Object.entries(ALGORITMOS).forEach(([clave, info]) => {
+      // Espejo local del arreglo para simular el consumo de eventos
+      const espejo = [...testArray];
+      const generador = info.generador(espejo);
+      
+      for (let evento of generador) {
+        if (evento.type === TIPOS_EVENTO.INTERCAMBIAR) {
+          const [i, j] = evento.indices;
+          let temp = espejo[i]; espejo[i] = espejo[j]; espejo[j] = temp;
+        } else if (evento.type === TIPOS_EVENTO.ESCRIBIR) {
+          espejo[evento.indices[0]] = evento.value;
+        }
+      }
+
+      const esCorrecto = espejo.join(',') === arrayEsperado.join(',');
+      divResultados.innerHTML += `<p><b>${info.nombre}:</b> ${esCorrecto ? '✅ PASÓ' : '❌ FALLÓ'} (Resultado: ${espejo.join(',')})</p>`;
+    });
+  </script>
+</body>
+</html>
