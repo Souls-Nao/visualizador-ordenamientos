@@ -143,9 +143,11 @@
       </form>
 
       <progress id="bench-progreso" class="progreso" max="1" value="0"></progress>
-      <p id="bench-mensaje" class="aviso" role="status">
-        Los tiempos en JavaScript son distintos a los de Python, pero la forma de las curvas y las
-        proporciones entre algoritmos se mantienen.
+      <p id="bench-mensaje" class="aviso oculto" role="status"></p>
+      <p class="aviso">
+        Se miden las funciones originales de la práctica (ordenamientos.py) traducidas a JavaScript.
+        Los tiempos son distintos a los de Python, pero la forma de las curvas y las proporciones
+        entre algoritmos se mantienen. Cada tiempo es la mediana de las repeticiones.
       </p>
 
       <div id="zona-graficas" class="graficas">

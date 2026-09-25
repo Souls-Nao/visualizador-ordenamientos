@@ -14,6 +14,7 @@ import { crearEscena } from './ui/escena.js';
 import { iniciarControles } from './ui/controles.js';
 import { pintarFicha, pintarLeyenda, pintarResumen } from './ui/ficha.js';
 import { ESTADOS_REPRODUCTOR } from './motor/reproductor.js';
+import { iniciarBenchmark } from './benchmark/benchmark.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -47,3 +48,6 @@ const escena = crearEscena({
 });
 pintarLeyenda($('zona-leyenda'));
 controles = iniciarControles(escena);
+
+// Bloque 10 — Benchmark. B11 dibuja las gráficas y la tabla con los resultados.
+iniciarBenchmark();
