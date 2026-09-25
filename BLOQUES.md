@@ -54,7 +54,7 @@ terminarlo se actualiza su ficha y la bitácora.
 | B03 | Algoritmos generadores y registro | D-05, D-06, D-07, T-01, T-02 | B01 | H2 | ✅ |
 | B04 | Render: espejo y barras en canvas | D-08 | B01 | H3 | ✅ |
 | B05 | Reproductor y velocidad | D-09, D-10 | B00 | H3 | ✅ |
-| B06 | Panel de código y líneas de Python | D-14 | B03 | H4 | ⬜ |
+| B06 | Panel de código y líneas de Python | D-14 | B03 | H4 | ✅ |
 | B07 | Métricas: contadores y mensaje | D-13 | B01 | H3 | ⬜ |
 | B08 | Visualizador de un algoritmo | D-12, D-13 (UI) | B02–B07 | H3 | ⬜ |
 | B09 | Comparación: varios paneles y resumen | D-15, D-16 | B08 | H4 | ⬜ |
@@ -147,7 +147,7 @@ Los archivos marcados con ✔ ya existen en el repositorio.
 │   │   └── reproductor.js     ✔  B05
 │   ├── ui/
 │   │   ├── pestanas.js           B00  cambio de sección
-│   │   ├── panelCodigo.js        B06
+│   │   ├── panelCodigo.js     ✔  B06
 │   │   ├── panelAlgoritmo.js     B08
 │   │   ├── controles.js          B08
 │   │   ├── ficha.js              B08
@@ -256,7 +256,7 @@ Los define B00. Ningún JS usa un ID que no esté aquí; si hace falta uno nuevo
 | `.oculto` | `display: none` | B00 |
 | `.panel`, `.panel--activo`, `.panel--terminado` | tarjeta de un algoritmo | B00 (estilo), B08 |
 | `.panel__cabecera`, `.panel__titulo`, `.panel__lienzo`, `.panel__contadores`, `.panel__mensaje` | partes del panel | B00, B08 |
-| `.codigo`, `.codigo__linea`, `.codigo__num`, `.codigo__linea--activa` | panel de código | B00, B06 |
+| `.codigo`, `.codigo__titulo`, `.codigo__linea`, `.codigo__num`, `.codigo__linea--activa` | panel de código | B00, B06 |
 | `.leyenda__item`, `.leyenda__color` | leyenda | B00, B08 |
 | `.ficha`, `.ficha__tabla` | ficha del algoritmo | B00, B08 |
 | `.aviso`, `.aviso--error` | mensajes | B00 |
@@ -492,19 +492,23 @@ máx. 100 ms por cuadro y `MAX_PASOS_POR_CUADRO` pasos por cuadro · `setVelocid
 
 ---
 
-### B06: Panel de código y líneas de Python ⬜
+### B06: Panel de código y líneas de Python ✅
 
-- **Tareas:** D-14 · **Depende de:** B03
-- **Archivos:** `js/ui/panelCodigo.js` (`fuentesPython.js` y las líneas de los generadores se hicieron en B03)
+- **Tareas:** D-14 · **Depende de:** B03 · **Commits:** ver bitácora
+- **Archivos:** `js/ui/panelCodigo.js`; `.codigo__titulo` en `componentes.css`; montado en `main.js`
+  (muestra Bubble mientras B08 no lo controla)
 
 **Exporta (contrato):**
 ```js
-// panelCodigo.js
 export function crearPanelCodigo(contenedor = document.getElementById('zona-codigo')) {}
-// → { mostrar(idAlgoritmo), resaltar(line), limpiar() }
+// → { mostrar(id), resaltar(line), limpiar() }
 ```
-**Consume:** `ALGORITMOS[id].fuente` (B03). `line` es 1-indexado sobre esa fuente.
-**Criterio:** en los 8 algoritmos la línea resaltada corresponde a la operación visible.
+**Reglas:** `mostrar` no hace nada si ya muestra ese id · `resaltar` ignora la línea repetida y con
+`null` o fuera de rango solo quita el resaltado · el desplazamiento es solo dentro del panel
+(`scrollTop`), nunca de la página · `.codigo` tiene `position: relative`.
+**Consume:** `ALGORITMOS[id].nombre` y `.fuente` (B03).
+**Verificación:** 12 pruebas en `test.html` (65/65), incluida la de D-14: en los 8 algoritmos cada
+`compare`, `swap`, `write` y `pivot` apunta a una línea de Python que hace esa operación.
 
 ---
 
@@ -676,7 +680,8 @@ export function descargarCSV(resultados, nombre = 'benchmark.csv') {}
 | 25/09/2026 | B03 | Generadores traducidos de Python, `fuentesPython.js`, registro corregido y `test.html` con 37 pruebas | `980af8b`, `1f39d47`, `ae40eea` | — |
 | 25/09/2026 | B03 | Mejoras para el visualizador (Selection, Bubble, Merge), `conteos.py` y 48 pruebas contra el Python mostrado; bloque cerrado ✅ | `3e5bfe9`, `4b10024` | — |
 | 25/09/2026 | B04 | Espejo y canvas de barras; test.html usa el espejo; bloque cerrado ✅ | `e5c09d3`, `b276288` | — |
-| 25/09/2026 | B05 | Reproductor con acumulador y velocidad logarítmica; bloque cerrado ✅ | ver `git log --grep B05` | B06 (panel de código) |
+| 25/09/2026 | B05 | Reproductor con acumulador y velocidad logarítmica; bloque cerrado ✅ | `ced8bc9`, `64301cb` | — |
+| 25/09/2026 | B06 | Panel de código con línea activa y prueba de correspondencia; bloque cerrado ✅ | ver `git log --grep B06` | B07 (métricas) |
 
 ---
 

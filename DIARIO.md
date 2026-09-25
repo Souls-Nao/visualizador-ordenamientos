@@ -6,6 +6,29 @@ La entrada más reciente va arriba.
 
 ---
 
+## 25/09/2026 · B06: Panel de código
+
+**Archivo:** `js/ui/panelCodigo.js` (+ `.codigo__titulo` en CSS, montado en `main.js`).
+
+**Qué hace.** `mostrar(id)` dibuja el Python de `ALGORITMOS[id].fuente`, una `<div>` por línea con
+su número, y un título fijo "Merge Sort · Python". `resaltar(line)` pone la clase
+`codigo__linea--activa` en la línea del evento actual.
+
+**Decisiones.**
+- Solo se toca el DOM cuando la línea cambia: a 2000 pasos/s la mayoría de los eventos repiten
+  línea, así que no se hace trabajo de más.
+- El panel se desplaza con `scrollTop` y no con `scrollIntoView`, porque este último también mueve la
+  página y haría que la pantalla saltara durante la animación. Para medir la posición de la línea el
+  panel tiene `position: relative` y se descuenta la altura del título fijo.
+- Mientras B08 no conecte los controles, `main.js` muestra el código de Bubble Sort.
+
+**Pruebas (65/65).** Además de mostrar, resaltar, desplazar y limpiar, hay una prueba para el
+criterio de D-14 ("la línea resaltada corresponde a la operación"): ejecuta los 8 algoritmos y
+comprueba que cada comparación apunte a una línea con `<` o `>`, cada intercambio a una línea
+`arr[a], arr[b] = ...`, cada escritura a `arr[k] = ...` y cada pivote a `pivote = ...`.
+
+---
+
 ## 25/09/2026 · B05: Reproductor y velocidad
 
 **Archivo:** `js/motor/reproductor.js`.
