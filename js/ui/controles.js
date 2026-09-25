@@ -156,8 +156,10 @@ export function iniciarControles(escena) {
   inpTamano.min = TAMANO_MIN;
   inpTamano.value = Number.isInteger(prefs.tamano) ? prefs.tamano : TAMANO_DEFECTO;
   if (Object.values(PATRONES).includes(prefs.patron)) selPatron.value = prefs.patron;
-  inpVelocidad.value = sliderDesdeVelocidad(Number(prefs.velocidad) || VELOCIDAD_DEFECTO);
-  const velocidad = velocidadDesdeSlider(Number(inpVelocidad.value));
+  // La velocidad inicial se usa tal cual; el deslizador solo se acerca a
+  // ella (ida y vuelta por la escala logarítmica, 20 daría 19).
+  const velocidad = Number(prefs.velocidad) || VELOCIDAD_DEFECTO;
+  inpVelocidad.value = sliderDesdeVelocidad(velocidad);
   lblVelocidad.textContent = velocidad;
   escena.setVelocidad(velocidad);
   escena.setSeleccion(seleccionados());
