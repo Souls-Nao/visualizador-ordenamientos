@@ -6,6 +6,37 @@ La entrada más reciente va arriba.
 
 ---
 
+## 25/09/2026 · B11: Gráficas, tabla y CSV
+
+**Archivos:** `js/benchmark/graficas.js`, `csv.js`, `vendor/chart.umd.min.js`, ajuste en `worker.js`.
+
+**Gráficas.** Las mismas cuatro de `benchmark.py`, con sus títulos y colores (`tab:blue`,
+`tab:orange`, ...): Stooge solo, fuerza bruta, fuerza bruta vs Merge y fuerza bruta vs Quick. Chart.js
+está copiado en `vendor/` (no depende de internet) y se carga como script normal antes de los
+módulos. Antes de dibujar se destruyen las gráficas anteriores, así repetir la medición no las
+duplica. Los colores de texto se leen de las variables CSS para que se vean en tema claro y oscuro.
+
+**Tabla y CSV.** Una fila por tamaño y una columna por algoritmo, en milisegundos. El CSV lleva BOM
+para que Excel muestre bien los acentos. Un tiempo omitido (Stooge con listas grandes) aparece como
+hueco en la gráfica, `—` en la tabla y vacío en el CSV.
+
+**Problema encontrado y corregido en la medición** (vale la pena contarlo en la revisión):
+1. *Curvas al revés:* Bubble tardaba más con n = 200 que con n = 500. Causa: el motor de JavaScript
+   optimiza una función después de varias ejecuciones; los primeros tamaños se medían sin optimizar.
+   Solución: un calentamiento general (5 rondas de todos los algoritmos) antes de medir.
+2. *Tiempos en 0.000:* el navegador redondea `performance.now()` a unos 0.1 ms por seguridad, y
+   ordenar 100 elementos tarda menos que eso. Solución: medir por lotes. Se repite el algoritmo
+   (1, 2, 4, 8... veces) hasta que el lote dure al menos 5 ms y se divide entre las vueltas. Las
+   versiones fieles copian la lista al empezar, como `lista.copy()` en Python, así que repetirlas
+   sobre la misma lista es válido.
+
+Con eso las curvas crecen como se espera (O(n²) y O(n log n) se distinguen) y dos ejecuciones
+seguidas dan casi los mismos números. De 100 a 500 tarda unos 2 s.
+
+**Pruebas (76/76).** Se agregó una prueba del CSV. Las gráficas se verificaron en la página.
+
+---
+
 ## 25/09/2026 · B10: Benchmark (medición)
 
 **Archivos:** `js/benchmark/fieles.js`, `worker.js`, `benchmark.js`.

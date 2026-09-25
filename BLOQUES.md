@@ -59,7 +59,7 @@ terminarlo se actualiza su ficha y la bitácora.
 | B08 | Visualizador: paneles, escena y controles | D-12, D-13 (UI) | B02–B07 | H3 | ✅ |
 | B09 | Comparación: varios paneles y resumen | D-15, D-16 | B08 | H4 | ✅ |
 | B10 | Benchmark: versiones fieles y Worker | D-17, D-18 | B02, B03 | H5 | ✅ |
-| B11 | Benchmark: gráficas, tabla y CSV | D-19, D-24 (CSV) | B10 | H5 | ⬜ |
+| B11 | Benchmark: gráficas, tabla y CSV | D-19, D-24 (CSV) | B10 | H5 | ✅ |
 | B12 | Pulido, pestañas y extras | D-20, D-23, D-24 | B09, B11 | H5 | ⬜ |
 | B13 | Documentación, pruebas finales y entrega | D-21, T-03, D-22, E-01 | todos | H5–H6 | ⬜ |
 
@@ -156,10 +156,10 @@ Los archivos marcados con ✔ ya existen en el repositorio.
 │       ├── fieles.js          ✔  B10
 │       ├── worker.js          ✔  B10
 │       ├── benchmark.js       ✔  B10
-│       ├── graficas.js           B11
-│       └── csv.js                B11
+│       ├── graficas.js        ✔  B11
+│       └── csv.js             ✔  B11
 ├── vendor/
-│   └── chart.umd.min.js          B11
+│   └── chart.umd.min.js       ✔  B11  Chart.js 4.4.7 (MIT)
 └── docs/
     ├── eventos.md             ✔  B01
     ├── referencia/               B00  ordenamientos.py, benchmark.py, main.py originales
@@ -213,6 +213,7 @@ contenedor · `vista-` sección de pestaña · `tabla-` tabla · `bench-` campo 
 | `COLORES` | `render/canvasBarras.js` (B04) | un color por valor de `ESTADOS_COLOR` | B04, leyenda B08 |
 | `NOMBRES_ESTADO` | `render/canvasBarras.js` (B04) | texto de cada estado para la leyenda | B08 |
 | `GRUPOS_GRAFICAS` | `benchmark/graficas.js` (B11) | las 4 gráficas de `benchmark.py` | B11 |
+| `COLOR_ALGORITMO` | `benchmark/graficas.js` (B11) | colores `tab:` de `benchmark.py` | B11 |
 
 > Los colores de las barras viven **solo** en `COLORES` (B04), tal como indica el comentario de
 > `ESTADOS_COLOR`. La leyenda se genera desde ahí, así que el canvas y la leyenda nunca se desincronizan.
@@ -261,6 +262,7 @@ Los define B00. Ningún JS usa un ID que no esté aquí; si hace falta uno nuevo
 | `.leyenda__item`, `.leyenda__color` | leyenda | B00, B08 |
 | `.ficha`, `.ficha__tabla` | ficha del algoritmo | B00, B08 |
 | `.aviso`, `.aviso--error` | mensajes | B00 |
+| `.grafica` | contenedor de cada gráfica de Chart.js | B11 |
 | `.marcador` | contenido provisional que un bloque posterior reemplaza | B00 |
 
 ---
@@ -625,33 +627,38 @@ cancelar = `worker.terminate()`.
 **`resultados`** (lo consume B11):
 `{ tamanos:number[], patron, repeticiones, tiempos:{ id:(ms|null)[] }, omitidos:{ id:motivo } }`
 
-**Reglas:** una lista por tamaño y una copia por algoritmo (como `benchmark.py`) · 1 calentamiento
-descartado + mediana de `repeticiones` · Stooge se omite (null) con n > `LIMITE_STOOGE_BENCH` ·
+**Reglas:** una lista por tamaño y una copia por algoritmo (como `benchmark.py`) · calentamiento
+general previo · cada medición es un lote de al menos 5 ms dividido entre sus vueltas (ajustado en
+B11) · mediana de `repeticiones` lotes · Stooge se omite (null) con n > `LIMITE_STOOGE_BENCH` ·
 validación: enteros, inicio ≥ 1, incremento > 0, inicio ≤ fin, 1–20 repeticiones, máx. 100 tamaños.
 **Verificación:** 3 pruebas nuevas (75/75); en la página, 100→500 de 100 en 100 terminó en 1 s sin
 congelar la interfaz, y Cancelar detiene una medición larga.
 
 ---
 
-### B11: Benchmark: gráficas, tabla y CSV ⬜
+### B11: Benchmark: gráficas, tabla y CSV ✅
 
-- **Tareas:** D-19, D-24 (CSV) · **Depende de:** B10
-- **Archivos:** `js/benchmark/graficas.js`, `js/benchmark/csv.js`, `vendor/chart.umd.min.js`
+- **Tareas:** D-19, D-24 (CSV) · **Depende de:** B10 · **Commits:** ver bitácora
+- **Archivos:** `js/benchmark/graficas.js`, `js/benchmark/csv.js`, `vendor/chart.umd.min.js`;
+  `index.html` carga Chart.js con `defer` antes de `main.js`; `.grafica` en CSS; ajuste de medición
+  en `worker.js`.
 
 **Exporta (contrato):**
 ```js
-export const GRUPOS_GRAFICAS = [
-  { titulo: 'Stooge Sort (solo)', ids: ['stooge'] },
-  { titulo: 'Fuerza bruta', ids: ['selection','bubble','insertion','gnome','exchange'] },
-  { titulo: 'Fuerza bruta vs Merge Sort', ids: [...5 anteriores, 'merge'] },
-  { titulo: 'Fuerza bruta vs Quick Sort', ids: [...5 anteriores, 'quick'] },
-];
+// graficas.js (usa window.Chart)
+export const GRUPOS_GRAFICAS = [{ titulo, ids, destacado? }, ...];   // las 4 de benchmark.py
 export function dibujarGraficas(contenedor, resultados) {}   // destruye las anteriores
 export function pintarTablaBench(tabla, resultados) {}
-export function resultadosACSV(resultados) {}
-export function descargarCSV(resultados, nombre = 'benchmark.csv') {}
+export function limpiarResultados(contenedor, tabla) {}
+// csv.js
+export function resultadosACSV(resultados) {}   // 'n,Selection Sort (ms),...' con \r\n
+export function descargarCSV(resultados, nombre?) {}
 ```
-**Criterio:** las 4 gráficas y la tabla aparecen; volver a ejecutar no duplica gráficas.
+**Reglas:** mismos títulos y colores que `benchmark.py`; Merge y Quick con línea más gruesa en su
+gráfica; un tiempo omitido (`null`) deja hueco en la línea, `—` en la tabla y vacío en el CSV;
+`#btn-bench-csv` solo se activa con resultados.
+**Verificación:** 76/76; en la página aparecen 4 gráficas y la tabla, y repetir la medición no las
+duplica (siguen 4 instancias de Chart).
 
 ---
 
@@ -724,7 +731,8 @@ export function descargarCSV(resultados, nombre = 'benchmark.csv') {}
 | 25/09/2026 | B07 | Contadores y mensajes de estado; bloque cerrado ✅ | `ed31e6a`, `1243663` | — |
 | 25/09/2026 | B08 | Panel de algoritmo, escena, controles, ficha y leyenda; visualizador funcional; bloque cerrado ✅ | `ea89650`, `8601b6f` | — |
 | 25/09/2026 | B09 | Orden de llegada, tabla resumen, Todos / Ninguno; bloque cerrado ✅ | `e9a1b62`, `89f60ed` | — |
-| 25/09/2026 | B10 | Versiones fieles, Web Worker, validación y progreso del benchmark; bloque cerrado ✅ | ver `git log --grep B10` | B11 (gráficas y tabla) |
+| 25/09/2026 | B10 | Versiones fieles, Web Worker, validación y progreso del benchmark; bloque cerrado ✅ | `38590ae`, `e6d44c2` | — |
+| 25/09/2026 | B11 | Gráficas con Chart.js, tabla, CSV y medición por lotes; bloque cerrado ✅ | ver `git log --grep B11` | B12 (pulido) |
 
 ---
 
