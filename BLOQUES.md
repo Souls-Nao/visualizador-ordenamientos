@@ -47,7 +47,7 @@ terminarlo se actualiza su ficha y la bitácora.
 
 | Bloque | Nombre | Tareas backlog | Depende de | Hito | Estado |
 |---|---|---|---|---|---|
-| B00 | Base, maqueta y publicación | D-01, D-02, D-03 | — | H1 | 🟨 |
+| B00 | Base, maqueta y publicación | D-01, D-02, D-03 | — | H1 | ✅ |
 | B01 | Contrato de eventos | D-04 | — | H2 | ✅ |
 | B02 | Generación de datos | D-11 | — | H3 | ✅ |
 | B03 | Algoritmos generadores y registro | D-05, D-06, D-07, T-01 | B01 | H2 | 🟨 |
@@ -264,7 +264,7 @@ Los define B00. Ningún JS usa un ID que no esté aquí; si hace falta uno nuevo
 
 ---
 
-### B00: Base, maqueta y publicación 🟨
+### B00: Base, maqueta y publicación ✅
 
 - **Tareas:** D-01, D-02, D-03 · **Depende de:** — · **Commits:** ver bitácora (prefijo `B00`)
 - **Objetivo:** página estática que ya tiene todos los contenedores e IDs de 3.3, se ve como el boceto,
@@ -313,9 +313,9 @@ las 4 pestañas cambian de sección; la URL pública muestra la maqueta.
 cambian de sección y respetan el hash; sin desborde horizontal a 375 px; distribución correcta a 800
 y 1280 px.
 
-**Pendiente para ✅:**
-- [ ] `git push` y activar GitHub Pages (*Settings → Pages → Deploy from a branch → `main` / `/ (root)`*).
-- [ ] Comprobar que la URL pública muestra la maqueta.
+**Publicación (25/09/2026):** GitHub Pages activo desde *Settings → Pages → Deploy from a branch →
+`main` / `/ (root)`*. La URL pública responde 200, carga los módulos JS y CSS, cambia de pestaña y no
+muestra errores en consola. Cada `push` a `main` actualiza el sitio automáticamente.
 
 ---
 
@@ -632,7 +632,8 @@ export function descargarCSV(resultados, nombre = 'benchmark.csv') {}
 | 25/09/2026 | B02 | `generarDatos` con 4 patrones | `36b94f9` | — |
 | 25/09/2026 | B03 | 8 generadores, registro y `test.html` | `1bafb70` | Correcciones de B03 |
 | 25/09/2026 | — | BLOQUES.md alineado con el código existente; se elimina el volcado de git config | `049dc70`, `ccd423b` | B00 |
-| 25/09/2026 | B00 | Estructura, `config.js`, pestañas, maqueta completa, `.py` de referencia | ver `git log --grep B00` | Publicar en Pages y pasar a las correcciones de B03 |
+| 25/09/2026 | B00 | Estructura, `config.js`, pestañas, maqueta completa, `.py` de referencia | `4c0ce68`, `80e2772` | — |
+| 25/09/2026 | B00 | Publicación en GitHub Pages verificada; bloque cerrado ✅ | *(este commit)* | Correcciones de B03 |
 
 ---
 
