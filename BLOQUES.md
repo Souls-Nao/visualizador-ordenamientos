@@ -6,7 +6,8 @@
 **Tablero:** https://github.com/users/Souls-Nao/projects/2/views/1
 **Sitio publicado:** https://souls-nao.github.io/visualizador-ordenamientos/
 
-Este documento es la **fuente de verdad** de la arquitectura. Registra cada bloque de desarrollo: qué
+Este documento es la **fuente de verdad** de la arquitectura. Las explicaciones detalladas de
+cada sesión están en [DIARIO.md](DIARIO.md). Registra cada bloque de desarrollo: qué
 archivos crea, qué **exporta** (su contrato), qué **consume** de bloques anteriores y qué variables,
 constantes, IDs del DOM y eventos introduce. Antes de programar un bloque se lee este archivo; al
 terminarlo se actualiza su ficha y la bitácora.
@@ -51,7 +52,7 @@ terminarlo se actualiza su ficha y la bitácora.
 | B01 | Contrato de eventos | D-04 | — | H2 | ✅ |
 | B02 | Generación de datos | D-11 | — | H3 | ✅ |
 | B03 | Algoritmos generadores y registro | D-05, D-06, D-07, T-01, T-02 | B01 | H2 | ✅ |
-| B04 | Render: espejo y barras en canvas | D-08 | B01 | H3 | ⬜ |
+| B04 | Render: espejo y barras en canvas | D-08 | B01 | H3 | ✅ |
 | B05 | Reproductor y velocidad | D-09, D-10 | B00 | H3 | ⬜ |
 | B06 | Panel de código y líneas de Python | D-14 | B03 | H4 | ⬜ |
 | B07 | Métricas: contadores y mensaje | D-13 | B01 | H3 | ⬜ |
@@ -140,8 +141,8 @@ Los archivos marcados con ✔ ya existen en el repositorio.
 │   │   ├── index.js           ✔  B03  registro ALGORITMOS
 │   │   └── fuentesPython.js   ✔  B03  código Python mostrado en pantalla
 │   ├── render/
-│   │   ├── espejo.js             B04  estado de las barras (lógica pura)
-│   │   └── canvasBarras.js       B04  dibujo en canvas y COLORES
+│   │   ├── espejo.js          ✔  B04  estado de las barras (lógica pura)
+│   │   └── canvasBarras.js    ✔  B04  dibujo en canvas y COLORES
 │   ├── motor/
 │   │   └── reproductor.js        B05
 │   ├── ui/
@@ -210,6 +211,7 @@ contenedor · `vista-` sección de pestaña · `tabla-` tabla · `bench-` campo 
 | `CLAVE_PREFERENCIAS` | `config.js` (B00) | `'vo.preferencias'` | B12 |
 | `ENLACES` | `config.js` (B00) | URLs del repositorio, tablero y sitio | B00, B12 |
 | `COLORES` | `render/canvasBarras.js` (B04) | un color por valor de `ESTADOS_COLOR` | B04, leyenda B08 |
+| `NOMBRES_ESTADO` | `render/canvasBarras.js` (B04) | texto de cada estado para la leyenda | B08 |
 | `GRUPOS_GRAFICAS` | `benchmark/graficas.js` (B11) | las 4 gráficas de `benchmark.py` | B11 |
 
 > Los colores de las barras viven **solo** en `COLORES` (B04), tal como indica el comentario de
@@ -438,36 +440,34 @@ Todas pasan en 11 cargas seguidas. Si se cambia una fuente: actualizar el genera
 
 ---
 
-### B04: Render: espejo y barras en canvas ⬜
+### B04: Render: espejo y barras en canvas ✅
 
-- **Tareas:** D-08 · **Depende de:** B01 (y `RANGO_VALORES` de B02)
-- **Objetivo:** convertir eventos en barras de colores. No sabe nada de algoritmos.
-
-**Archivos:** `js/render/espejo.js`, `js/render/canvasBarras.js`
+- **Tareas:** D-08 · **Depende de:** B01 · **Commits:** ver bitácora
+- **Archivos:** `js/render/espejo.js`, `js/render/canvasBarras.js`
 
 **Exporta (contrato):**
 ```js
-// espejo.js — lógica pura, sin DOM (se prueba en test.html)
+// espejo.js — lógica pura, sin DOM
 export function crearEspejo(arreglo) {}
-// → { valores: number[], estados: string[] /* ESTADOS_COLOR por posición */, terminado: false }
-export function aplicarEvento(espejo, evento) {}
-// 1) estados que no son 'ordenado' vuelven a 'sin-tocar'
-// 2) swap/write modifican valores
-// 3) indices del evento toman COLOR_POR_TIPO[evento.type] (sin pisar 'ordenado', salvo con swap/write)
-// 4) done → terminado = true y todas las posiciones pasan a 'ordenado'
+// → { valores:number[], estados:string[], ordenados:Set<number>, pivote:number|null,
+//     marcados:number[], terminado:boolean }
+export function aplicarEvento(espejo, evento) {}   // muta el espejo; costo O(1) por evento
+export function marcarTodoOrdenado(espejo) {}
 
 // canvasBarras.js
-export const COLORES = { 'sin-tocar':'…azul', comparando:'…amarillo', intercambio:'…rojo',
-                         pivote:'…morado', ordenado:'…verde' };
-export function crearCanvasBarras(canvas, { maximo = RANGO_VALORES.maximo } = {}) {}
-// → { dibujar(espejo), redimensionar(), destruir() }   // usa ResizeObserver y devicePixelRatio
+export const COLORES = { 'sin-tocar':'#3b82f6', comparando:'#facc15', intercambio:'#ef4444',
+                         pivote:'#a855f7', ordenado:'#22c55e' };
+export const NOMBRES_ESTADO = { 'sin-tocar':'Sin tocar', ... };   // para la leyenda
+export function crearCanvasBarras(canvas) {}   // → { dibujar(espejo), redimensionar(), destruir() }
 ```
-**Notas para implementar:**
-- Insertion, Gnome, Stooge y Merge no emiten `sorted`; dependen de que `done` marque todo.
-- Quick emite `pivot` una vez por partición y luego `compare(i, posPivote)`; el pivote puede
-  moverse con un `swap`. Decidir aquí si el color de pivote persiste durante la partición.
 
-**Criterio:** barras proporcionales con los 5 colores; se adaptan al tamaño del canvas.
+**Reglas de color:** los colores de un evento duran un paso · `ordenado` es permanente · el pivote
+es morado durante su partición, también al compararse, y se mueve con los `swap` · `done` pinta todo
+de verde.
+**Dibujo:** altura relativa al mayor valor de la lista; se ajusta con `ResizeObserver` y
+`devicePixelRatio`; separación de 1 px si la barra mide más de 4 px; altura mínima de 2 px.
+**Verificación:** `test.html` reproduce todos los eventos con `aplicarEvento` y exige valores
+ordenados y todas las barras en verde (48/48). Canvas probado con Quick Sort a medio camino.
 
 ---
 
@@ -674,7 +674,8 @@ export function descargarCSV(resultados, nombre = 'benchmark.csv') {}
 | 25/09/2026 | B00 | Estructura, `config.js`, pestañas, maqueta completa, `.py` de referencia | `4c0ce68`, `80e2772` | — |
 | 25/09/2026 | B00 | Publicación en GitHub Pages verificada; bloque cerrado ✅ | `877c9b4` | — |
 | 25/09/2026 | B03 | Generadores traducidos de Python, `fuentesPython.js`, registro corregido y `test.html` con 37 pruebas | `980af8b`, `1f39d47`, `ae40eea` | — |
-| 25/09/2026 | B03 | Mejoras para el visualizador (Selection, Bubble, Merge), `conteos.py` y 48 pruebas contra el Python mostrado; bloque cerrado ✅ | ver `git log --grep B03` | B04 (espejo y canvas) |
+| 25/09/2026 | B03 | Mejoras para el visualizador (Selection, Bubble, Merge), `conteos.py` y 48 pruebas contra el Python mostrado; bloque cerrado ✅ | `3e5bfe9`, `4b10024` | — |
+| 25/09/2026 | B04 | Espejo y canvas de barras; test.html usa el espejo; bloque cerrado ✅ | ver `git log --grep B04` | B05 (reproductor) |
 
 ---
 
