@@ -266,7 +266,7 @@ Los define B00. Ningún JS usa un ID que no esté aquí; si hace falta uno nuevo
 
 ### B00: Base, maqueta y publicación 🟨
 
-- **Tareas:** D-01, D-02, D-03 · **Depende de:** — · **Commits:** *(al cerrar)*
+- **Tareas:** D-01, D-02, D-03 · **Depende de:** — · **Commits:** ver bitácora (prefijo `B00`)
 - **Objetivo:** página estática que ya tiene todos los contenedores e IDs de 3.3, se ve como el boceto,
   cambia de pestaña y está publicada en GitHub Pages.
 
@@ -301,6 +301,21 @@ las 4 pestañas cambian de sección; la URL pública muestra la maqueta.
 - Los controles aparecen en la maqueta pero todavía no hacen nada; los conecta B08.
 - Las opciones de `#sel-patron` y `#bench-patron` están escritas en el HTML con los mismos `value` que
   `PATRONES` (B02). B08 agrega una prueba que verifica que coincidan.
+- Los textos con clase `.marcador` indican qué bloque llenará cada zona; se eliminan al conectarla.
+- `#inp-velocidad` arranca en 39, que en escala logarítmica de 1 a 2000 equivale a 20 pasos/s
+  (`VELOCIDAD_DEFECTO`); B05 define la fórmula exacta.
+- La pestaña activa se guarda en `location.hash`, así que `…/#benchmark` abre directo esa sección.
+- Se recuperaron los `.py` originales en `docs/referencia/` porque B06 (código en pantalla) y B10
+  (versiones fieles) se basan en ellos.
+- Servidor local: `python -m http.server 8765` y abrir `http://localhost:8765`.
+
+**Verificación (25/09/2026):** sin errores en consola; existen los 41 IDs de 3.3; las 4 pestañas
+cambian de sección y respetan el hash; sin desborde horizontal a 375 px; distribución correcta a 800
+y 1280 px.
+
+**Pendiente para ✅:**
+- [ ] `git push` y activar GitHub Pages (*Settings → Pages → Deploy from a branch → `main` / `/ (root)`*).
+- [ ] Comprobar que la URL pública muestra la maqueta.
 
 ---
 
@@ -616,7 +631,8 @@ export function descargarCSV(resultados, nombre = 'benchmark.csv') {}
 | 25/09/2026 | B01 | Contrato de eventos y `docs/eventos.md` | `3b71c07`, `2d0dd8e` | — |
 | 25/09/2026 | B02 | `generarDatos` con 4 patrones | `36b94f9` | — |
 | 25/09/2026 | B03 | 8 generadores, registro y `test.html` | `1bafb70` | Correcciones de B03 |
-| 25/09/2026 | — | BLOQUES.md alineado con el código existente | *(pendiente)* | B00 |
+| 25/09/2026 | — | BLOQUES.md alineado con el código existente; se elimina el volcado de git config | `049dc70`, `ccd423b` | B00 |
+| 25/09/2026 | B00 | Estructura, `config.js`, pestañas, maqueta completa, `.py` de referencia | ver `git log --grep B00` | Publicar en Pages y pasar a las correcciones de B03 |
 
 ---
 

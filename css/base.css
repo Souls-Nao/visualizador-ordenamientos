@@ -1,0 +1,151 @@
+/*
+ * css/base.css
+ * ─────────────────────────────────────────────────────────────────────────
+ * Bloque 00 — Variables, reset y elementos básicos (botones, campos).
+ *
+ * Todos los colores y medidas de la interfaz salen de estas variables.
+ * Los colores de las BARRAS no están aquí: viven en COLORES de
+ * js/render/canvasBarras.js (Bloque 04), porque los usa el canvas.
+ */
+
+:root {
+  --fondo: #f4f6fb;
+  --superficie: #ffffff;
+  --superficie-2: #eef1f7;
+  --texto: #1b2230;
+  --texto-suave: #5b6578;
+  --borde: #d6dbe6;
+  --acento: #2f5bd3;
+  --acento-texto: #ffffff;
+  --error: #c62828;
+  --resaltado: #fff3c4;
+
+  --radio: 8px;
+  --sombra: 0 1px 3px rgb(20 30 60 / 0.08), 0 4px 12px rgb(20 30 60 / 0.05);
+
+  --esp-1: 4px;
+  --esp-2: 8px;
+  --esp-3: 12px;
+  --esp-4: 16px;
+  --esp-5: 24px;
+
+  --fuente: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --fuente-mono: ui-monospace, "Cascadia Code", Consolas, "Courier New", monospace;
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fondo: #11151d;
+    --superficie: #1a202b;
+    --superficie-2: #232a37;
+    --texto: #e6e9ef;
+    --texto-suave: #9aa3b5;
+    --borde: #313a4a;
+    --acento: #6f95ff;
+    --acento-texto: #0d1220;
+    --error: #ff6b6b;
+    --resaltado: #4a4020;
+    --sombra: none;
+  }
+}
+
+/* ── Reset mínimo ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: var(--fuente);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+h1, h2, h3, p {
+  margin: 0;
+}
+
+a {
+  color: var(--acento);
+}
+
+/* ── Botones ── */
+.boton {
+  font: inherit;
+  padding: var(--esp-2) var(--esp-4);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  color: var(--texto);
+  cursor: pointer;
+}
+
+.boton:hover:not(:disabled) {
+  background: var(--superficie-2);
+}
+
+.boton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.boton--primario {
+  background: var(--acento);
+  border-color: var(--acento);
+  color: var(--acento-texto);
+}
+
+.boton--primario:hover:not(:disabled) {
+  background: var(--acento);
+  filter: brightness(1.1);
+}
+
+.boton--chico {
+  padding: var(--esp-1) var(--esp-3);
+  font-size: 0.875rem;
+}
+
+/* ── Campos ── */
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+input[type="number"],
+select {
+  padding: var(--esp-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  min-width: 0;
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--acento);
+}
+
+:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+/* ── Utilidades ── */
+.oculto {
+  display: none !important;
+}
+
+/* Contenido provisional que un bloque posterior reemplaza. */
+.marcador {
+  color: var(--texto-suave);
+  font-style: italic;
+  font-size: 0.875rem;
+}

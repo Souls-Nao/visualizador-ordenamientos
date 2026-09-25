@@ -1,0 +1,131 @@
+/*
+ * css/layout.css
+ * ─────────────────────────────────────────────────────────────────────────
+ * Bloque 00 — Distribución general de la página.
+ *
+ * Encabezado con pestañas, barra de herramientas, cuadrícula de paneles y
+ * zona inferior (código + leyenda + ficha). Por debajo de 700 px todo se
+ * apila en una sola columna (boceto 8.4).
+ */
+
+/* ── Encabezado ── */
+.encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--esp-3);
+  padding: var(--esp-3) var(--esp-5);
+  background: var(--superficie);
+  border-bottom: 1px solid var(--borde);
+}
+
+.encabezado__titulo {
+  font-size: 1.25rem;
+}
+
+.pestanas {
+  display: flex;
+  gap: var(--esp-1);
+  overflow-x: auto;
+}
+
+.pestana {
+  font: inherit;
+  padding: var(--esp-2) var(--esp-3);
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--texto-suave);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pestana:hover {
+  color: var(--texto);
+}
+
+.pestana--activa {
+  color: var(--acento);
+  border-bottom-color: var(--acento);
+  font-weight: 600;
+}
+
+/* ── Contenido y vistas ── */
+.contenido {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--esp-5);
+}
+
+.vista {
+  display: none;
+}
+
+.vista--activa {
+  display: grid;
+  gap: var(--esp-4);
+}
+
+/* ── Barra de herramientas ── */
+.herramientas {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.3fr;
+  gap: var(--esp-3);
+}
+
+/* ── Cuadrícula de paneles (boceto 8.2, punto 3) ── */
+.paneles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--esp-3);
+}
+
+/* ── Zona inferior: código a la izquierda, leyenda y ficha a la derecha ── */
+.inferior {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--esp-3);
+  align-items: start;
+}
+
+.lateral {
+  display: grid;
+  gap: var(--esp-3);
+}
+
+/* ── Pie ── */
+.pie {
+  padding: var(--esp-4) var(--esp-5);
+  color: var(--texto-suave);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+/* ── Pantallas medianas ── */
+@media (max-width: 1000px) {
+  .herramientas {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .grupo--algoritmos {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ── Pantallas pequeñas (boceto 8.4) ── */
+@media (max-width: 700px) {
+  .encabezado,
+  .contenido {
+    padding: var(--esp-3);
+  }
+
+  .herramientas,
+  .inferior {
+    grid-template-columns: 1fr;
+  }
+
+  .paneles {
+    grid-template-columns: 1fr;
+  }
+}

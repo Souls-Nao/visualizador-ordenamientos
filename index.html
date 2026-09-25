@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visualizador de ordenamientos</title>
+  <meta name="description" content="Visualiza, ejecuta y compara ocho algoritmos de ordenamiento paso a paso.">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/componentes.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+
+  <!-- ═══ Encabezado (boceto 8.1, punto 1) ═══ -->
+  <header class="encabezado">
+    <h1 class="encabezado__titulo">Visualizador de ordenamientos</h1>
+    <nav id="nav-pestanas" class="pestanas" role="tablist" aria-label="Secciones">
+      <button type="button" class="pestana" role="tab" data-vista="visualizador">Visualizador</button>
+      <button type="button" class="pestana" role="tab" data-vista="benchmark">Benchmark</button>
+      <button type="button" class="pestana" role="tab" data-vista="algoritmos">Algoritmos</button>
+      <button type="button" class="pestana" role="tab" data-vista="acerca">Acerca</button>
+    </nav>
+  </header>
+
+  <main class="contenido">
+
+    <!-- ═══ Visualizador (boceto 8.1 y 8.2) ═══ -->
+    <section id="vista-visualizador" class="vista" aria-label="Visualizador">
+
+      <div class="herramientas">
+        <!-- Punto 2: selección de algoritmos -->
+        <fieldset class="grupo grupo--algoritmos">
+          <legend>Algoritmos</legend>
+          <div id="zona-seleccion" class="seleccion">
+            <p class="marcador">Las casillas se generan desde el registro de algoritmos (Bloque 08).</p>
+          </div>
+          <div class="grupo__acciones">
+            <button type="button" id="btn-todos" class="boton boton--chico">Todos</button>
+            <button type="button" id="btn-ninguno" class="boton boton--chico">Ninguno</button>
+          </div>
+        </fieldset>
+
+        <!-- Punto 3: datos -->
+        <fieldset class="grupo">
+          <legend>Datos</legend>
+          <label class="campo">
+            <span>Tamaño: <output id="lbl-tamano" for="inp-tamano">30</output></span>
+            <input type="range" id="inp-tamano" min="5" max="120" value="30">
+          </label>
+          <label class="campo">
+            <span>Patrón</span>
+            <select id="sel-patron">
+              <option value="aleatoria">Aleatoria</option>
+              <option value="ordenada">Ordenada</option>
+              <option value="invertida">Invertida</option>
+              <option value="casi-ordenada">Casi ordenada</option>
+            </select>
+          </label>
+          <button type="button" id="btn-nueva-lista" class="boton">Nueva lista</button>
+        </fieldset>
+
+        <!-- Punto 4: reproducción y velocidad -->
+        <fieldset class="grupo">
+          <legend>Reproducción</legend>
+          <div class="grupo__acciones">
+            <button type="button" id="btn-reproducir" class="boton boton--primario">Reproducir</button>
+            <button type="button" id="btn-pausar" class="boton">Pausar</button>
+            <button type="button" id="btn-paso" class="boton">Paso</button>
+            <button type="button" id="btn-reiniciar" class="boton">Reiniciar</button>
+          </div>
+          <label class="campo">
+            <span>Velocidad: <output id="lbl-velocidad" for="inp-velocidad">20</output> pasos/s</span>
+            <input type="range" id="inp-velocidad" min="0" max="100" value="39">
+          </label>
+        </fieldset>
+      </div>
+
+      <p id="lbl-aviso" class="aviso oculto" role="status"></p>
+
+      <!-- Punto 5: cuadrícula de paneles, uno por algoritmo -->
+      <div id="zona-paneles" class="paneles">
+        <article class="panel panel--activo">
+          <header class="panel__cabecera">
+            <h2 class="panel__titulo">Bubble Sort</h2>
+          </header>
+          <div class="panel__lienzo marcador">Aquí se dibujan las barras (Bloque 04).</div>
+          <dl class="panel__contadores">
+            <div><dt>Comparaciones</dt><dd>0</dd></div>
+            <div><dt>Movimientos</dt><dd>0</dd></div>
+            <div><dt>Pasos</dt><dd>0</dd></div>
+          </dl>
+          <p class="panel__mensaje">Listo para empezar.</p>
+        </article>
+      </div>
+
+      <!-- Resumen de la comparación (boceto 8.2, punto 6) -->
+      <div id="zona-resumen" class="resumen oculto">
+        <h2 class="subtitulo">Resumen</h2>
+        <div class="tabla-contenedor">
+          <table id="tabla-resumen" class="tabla"></table>
+        </div>
+      </div>
+
+      <!-- Puntos 6, 7 y 8: código, leyenda y ficha -->
+      <div class="inferior">
+        <div id="zona-codigo" class="codigo" aria-label="Código en Python">
+          <p class="marcador">Código Python con la línea activa resaltada (Bloque 06).</p>
+        </div>
+        <aside class="lateral">
+          <div id="zona-leyenda" class="leyenda" aria-label="Leyenda de colores">
+            <p class="marcador">Leyenda de colores (Bloque 08).</p>
+          </div>
+          <div id="zona-ficha" class="ficha">
+            <p class="marcador">Ficha del algoritmo: complejidad, espacio y estabilidad (Bloque 08).</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ═══ Benchmark (boceto 8.3) ═══ -->
+    <section id="vista-benchmark" class="vista" aria-label="Benchmark">
+      <form id="form-bench" class="formulario" novalidate>
+        <label class="campo">
+          <span>Tamaño inicial</span>
+          <input type="number" id="bench-inicio" min="1" step="1" value="100" inputmode="numeric">
+        </label>
+        <label class="campo">
+          <span>Incremento</span>
+          <input type="number" id="bench-incremento" min="1" step="1" value="100" inputmode="numeric">
+        </label>
+        <label class="campo">
+          <span>Tamaño final</span>
+          <input type="number" id="bench-fin" min="1" step="1" value="500" inputmode="numeric">
+        </label>
+        <label class="campo">
+          <span>Repeticiones</span>
+          <input type="number" id="bench-repeticiones" min="1" max="20" step="1" value="3" inputmode="numeric">
+        </label>
+        <label class="campo">
+          <span>Tipo de datos</span>
+          <select id="bench-patron">
+            <option value="aleatoria">Aleatoria</option>
+            <option value="ordenada">Ordenada</option>
+            <option value="invertida">Invertida</option>
+            <option value="casi-ordenada">Casi ordenada</option>
+          </select>
+        </label>
+        <div class="formulario__acciones">
+          <button type="submit" id="btn-bench-ejecutar" class="boton boton--primario">Ejecutar</button>
+          <button type="button" id="btn-bench-cancelar" class="boton" disabled>Cancelar</button>
+          <button type="button" id="btn-bench-csv" class="boton" disabled>Exportar CSV</button>
+        </div>
+      </form>
+
+      <progress id="bench-progreso" class="progreso" max="1" value="0"></progress>
+      <p id="bench-mensaje" class="aviso" role="status">
+        Los tiempos en JavaScript son distintos a los de Python, pero la forma de las curvas y las
+        proporciones entre algoritmos se mantienen.
+      </p>
+
+      <div id="zona-graficas" class="graficas">
+        <p class="marcador">Aquí aparecen las cuatro gráficas de benchmark.py (Bloque 11).</p>
+      </div>
+      <div class="tabla-contenedor">
+        <table id="tabla-bench" class="tabla"></table>
+      </div>
+    </section>
+
+    <!-- ═══ Algoritmos ═══ -->
+    <section id="vista-algoritmos" class="vista" aria-label="Algoritmos">
+      <h2 class="subtitulo">Los ocho algoritmos</h2>
+      <div class="tabla-contenedor">
+        <table id="tabla-algoritmos" class="tabla"></table>
+      </div>
+      <p class="marcador">La tabla comparativa se genera desde el registro de algoritmos (Bloque 12).</p>
+    </section>
+
+    <!-- ═══ Acerca del proyecto ═══ -->
+    <section id="vista-acerca" class="vista texto" aria-label="Acerca del proyecto">
+      <h2 class="subtitulo">Acerca del proyecto</h2>
+      <p>
+        Aplicación web para visualizar, ejecutar y comparar los ocho algoritmos de ordenamiento vistos
+        en clase: Selection, Bubble, Insertion, Gnome, Exchange, Stooge, Merge y Quick Sort.
+        Parte de la práctica en Python de la materia y la lleva al navegador.
+      </p>
+      <p><strong>Equipo Ultima Chance:</strong> Johan Daniel Gutierrez Nava.</p>
+      <p>
+        <strong>Tecnologías:</strong> HTML, CSS y JavaScript con módulos, sin frameworks; Canvas 2D
+        para las barras, Web Worker para el benchmark y Chart.js para las gráficas.
+      </p>
+      <ul class="enlaces">
+        <li><a id="enlace-repo" href="#" rel="noopener">Repositorio en GitHub</a></li>
+        <li><a id="enlace-tablero" href="#" rel="noopener">Tablero del proyecto</a></li>
+      </ul>
+    </section>
+
+  </main>
+
+  <footer class="pie">
+    Ultima Chance · 2026
+  </footer>
+
+</body>
+</html>
