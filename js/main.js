@@ -9,8 +9,13 @@
  */
 import { ENLACES } from './config.js';
 import { iniciarPestanas } from './ui/pestanas.js';
+import { crearPanelCodigo } from './ui/panelCodigo.js';
 
 // Bloque 00 — Base y navegación.
 iniciarPestanas();
 document.getElementById('enlace-repo').href = ENLACES.repositorio;
 document.getElementById('enlace-tablero').href = ENLACES.tablero;
+
+// Bloque 06 — Panel de código. B08 decide qué algoritmo mostrar y qué línea resaltar.
+const panelCodigo = crearPanelCodigo();
+panelCodigo.mostrar('bubble');

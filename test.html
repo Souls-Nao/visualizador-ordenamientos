@@ -18,7 +18,7 @@
 </head>
 <body>
 <main>
-  <h1>Pruebas del proyecto (Bloques 03 a 05)</h1>
+  <h1>Pruebas del proyecto (Bloques 03 a 06)</h1>
   <p>
     Cada algoritmo del registro se ejecuta con varias listas. Los eventos se aplican sobre una copia
     (un "espejo") y el resultado se compara con <code>Array.prototype.sort</code>. Los conteos se
@@ -38,6 +38,7 @@
   import { crearEspejo, aplicarEvento } from './js/render/espejo.js';
   import { crearReproductor, velocidadDesdeSlider, sliderDesdeVelocidad } from './js/motor/reproductor.js';
   import { VELOCIDAD_MIN, VELOCIDAD_MAX, VELOCIDAD_DEFECTO } from './js/config.js';
+  import { crearPanelCodigo } from './js/ui/panelCodigo.js';
   import { generarDatos, PATRONES } from './js/core/datos.js';
 
   /*
@@ -250,6 +251,62 @@
     reportar(R, 'Un cuadro atrasado 5 s no ejecuta de golpe los pasos atrasados (máx. 100 ms)',
              pasos === 200, `ejecutó ${pasos}`);
   });
+
+  // ── Bloque 06: panel de código ──
+  {
+    const P = 'Panel de código';
+    const caja = document.createElement('div');
+    caja.style.cssText = 'position: relative; height: 90px; overflow: auto;';
+    document.body.append(caja);
+    const panel = crearPanelCodigo(caja);
+    const activas = () => [...caja.querySelectorAll('.codigo__linea--activa')];
+    const visible = (el) => el.offsetTop >= caja.scrollTop &&
+                            el.offsetTop + el.offsetHeight <= caja.scrollTop + caja.clientHeight;
+
+    panel.mostrar('merge');
+    const lineas = caja.querySelectorAll('.codigo__linea');
+    reportar(P, 'Muestra todas las líneas de la fuente y el nombre del algoritmo',
+      lineas.length === ALGORITMOS.merge.fuente.length && caja.textContent.includes('Merge Sort'),
+      `${lineas.length} líneas`);
+
+    panel.resaltar(29);
+    const [l29] = activas();
+    reportar(P, 'Resalta solo la línea pedida y la desplaza a la vista',
+      activas().length === 1 && l29.querySelector('.codigo__num').textContent === '29' && visible(l29),
+      `activas: ${activas().length}, scrollTop ${caja.scrollTop}`);
+
+    panel.resaltar(2);
+    const [l2] = activas();
+    reportar(P, 'Al volver a una línea de arriba la desplaza de regreso',
+      activas().length === 1 && visible(l2) && caja.scrollTop < l29.offsetTop, `scrollTop ${caja.scrollTop}`);
+
+    panel.limpiar();
+    const trasLimpiar = activas().length;
+    panel.resaltar(5);
+    panel.mostrar('quick');
+    reportar(P, 'limpiar() quita el resaltado y mostrar() otro algoritmo empieza sin resaltar',
+      trasLimpiar === 0 && activas().length === 0 && caja.textContent.includes('Quick Sort'));
+    caja.remove();
+
+    // D-14: la línea resaltada corresponde a la operación. Cada tipo de evento
+    // debe apuntar a una línea de Python que haga esa operación.
+    const PATRON_LINEA = {
+      [TIPOS_EVENTO.COMPARAR]: /[<>]/,
+      [TIPOS_EVENTO.INTERCAMBIAR]: /arr\[[^\]]+\], arr\[[^\]]+\] = /,
+      [TIPOS_EVENTO.ESCRIBIR]: /arr\[[^\]]+\] = /,
+      [TIPOS_EVENTO.PIVOTE]: /pivote = /,
+    };
+    for (const id of Object.keys(ALGORITMOS)) {
+      const { generador, fuente } = ALGORITMOS[id];
+      const malas = new Set();
+      for (const evento of generador(generarDatos(12, PATRONES.ALEATORIA))) {
+        const patron = PATRON_LINEA[evento.type];
+        if (patron && !patron.test(fuente[evento.line - 1])) malas.add(`${evento.type}→${evento.line}`);
+      }
+      reportar(id, 'Cada comparación, intercambio, escritura y pivote apunta a una línea que hace esa operación',
+               malas.size === 0, [...malas].join(', '));
+    }
+  }
 
   const resumen = document.getElementById('resumen');
   resumen.textContent = fallidas === 0

@@ -136,9 +136,10 @@
 
 /* ── Panel de código (boceto 8.1, punto 6) ── */
 .codigo {
+  position: relative; /* las líneas miden su offsetTop respecto al panel */
   max-height: 320px;
   overflow: auto;
-  padding: var(--esp-2) 0;
+  padding: 0 0 var(--esp-2);
   border: 1px solid var(--borde);
   border-radius: var(--radio);
   background: var(--superficie);
@@ -147,8 +148,20 @@
 }
 
 .codigo > .marcador {
-  padding: 0 var(--esp-3);
+  padding: var(--esp-2) var(--esp-3) 0;
   font-family: var(--fuente);
+}
+
+/* Nombre del algoritmo cuyo código se muestra; queda fijo al desplazar. */
+.codigo__titulo {
+  position: sticky;
+  top: 0;
+  margin-bottom: var(--esp-1);
+  padding: var(--esp-2) var(--esp-3);
+  border-bottom: 1px solid var(--borde);
+  background: var(--superficie);
+  font-family: var(--fuente);
+  font-weight: 600;
 }
 
 .codigo__linea {
