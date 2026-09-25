@@ -7,18 +7,24 @@
  * desde 1, dentro de la fuente de su algoritmo en este archivo. El panel de
  * código (Bloque 06) muestra estas líneas y resalta la del evento actual.
  *
- * Origen de cada fuente (docs/referencia/ordenamientos.py):
- * - Los 6 de fuerza bruta: copia exacta de las funciones originales.
- * - Merge Sort: la misma lógica del original, pero con índices lo/hi sobre
- *   un solo arreglo, para poder dibujarlo como una sola fila de barras
- *   (decisión 5.2 de la planeación). Divide en el mismo punto, compara con
- *   el mismo `<` y hace las mismas comparaciones y escrituras.
- * - Quick Sort: versión en el lugar. Conserva la idea del original (pivote
- *   al centro y tres grupos: menores, iguales y mayores), pero acomoda los
+ * Las fuentes parten de la práctica (docs/referencia/ordenamientos.py), con
+ * los cambios necesarios para este visualizador:
+ * - Insertion, Gnome, Exchange y Stooge: igual que el original.
+ * - Selection: solo intercambia si el mínimo no está ya en su lugar.
+ * - Bubble: cada pasada recorre solo la parte sin ordenar y termina antes
+ *   si una pasada no hizo intercambios.
+ * - Merge: índices lo/hi sobre un solo arreglo, para dibujarlo como una
+ *   sola fila de barras (decisión 5.2 de la planeación), y `<=` para que
+ *   sea estable.
+ * - Quick: versión en el lugar. Conserva la idea del original (pivote al
+ *   centro y tres grupos: menores, iguales y mayores), pero acomoda los
  *   grupos dentro del mismo arreglo en lugar de crear listas nuevas.
  *
- * Si se modifica una fuente, hay que revisar los números de línea del
- * generador correspondiente; test.html avisa si alguno queda fuera de rango.
+ * Los generadores JS son la traducción exacta de estas fuentes:
+ * docs/referencia/conteos.py ejecuta este mismo código Python y test.html
+ * comprueba que el JS hace las mismas comparaciones y escrituras. Si se
+ * modifica una fuente, hay que actualizar su generador y volver a correr
+ * ese script.
  *
  * No importa nada de otros módulos del proyecto.
  */
@@ -45,7 +51,8 @@ def selection_sort(lista):
         for j in range(i + 1, n):
             if arr[j] < arr[min_idx]:
                 min_idx = j
-        arr[i], arr[min_idx] = arr[min_idx], arr[i]
+        if min_idx != i:
+            arr[i], arr[min_idx] = arr[min_idx], arr[i]
     return arr
 `),
 
@@ -53,10 +60,14 @@ def selection_sort(lista):
 def bubble_sort(lista):
     arr = lista.copy()
     n = len(arr)
-    for i in range(n):
-        for j in range(0, n - 1):
+    for i in range(n - 1):
+        hubo_intercambio = False
+        for j in range(0, n - 1 - i):
             if arr[j] > arr[j + 1]:
                 arr[j], arr[j + 1] = arr[j + 1], arr[j]
+                hubo_intercambio = True
+        if not hubo_intercambio:
+            break
     return arr
 `),
 
@@ -133,7 +144,7 @@ def _merge_sort_rec(arr, lo, hi):
     i = j = 0
     k = lo
     while i < len(izquierda) and j < len(derecha):
-        if izquierda[i] < derecha[j]:
+        if izquierda[i] <= derecha[j]:
             arr[k] = izquierda[i]
             i += 1
         else:

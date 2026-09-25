@@ -17,8 +17,8 @@
  * Al terminar la partición, los iguales al pivote ya están en su lugar
  * definitivo y solo se ordenan los grupos de menores y de mayores.
  *
- * Como no crea listas nuevas, sus conteos no coinciden con el original; la
- * versión fiel para medir tiempos es la del benchmark (Bloque 10).
+ * El benchmark (Bloque 10) usa además la versión original con listas
+ * nuevas, para medir tiempos igual que la práctica.
  */
 import {
   crearEventoComparar,

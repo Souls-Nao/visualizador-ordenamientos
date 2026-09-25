@@ -39,10 +39,10 @@ export const ALGORITMOS = Object.freeze({
   bubble: {
     nombre: 'Bubble Sort', generador: bubbleSort, fuente: FUENTES_PYTHON.bubble,
     categoria: 'fuerza-bruta',
-    // Sin salida temprana (como el original): siempre hace n pasadas.
-    mejor: 'O(n²)', promedio: 'O(n²)', peor: 'O(n²)',
+    // Con salida temprana: si la lista ya está ordenada basta una pasada.
+    mejor: 'O(n)', promedio: 'O(n²)', peor: 'O(n²)',
     espacio: 'O(1)', estable: 'Sí',
-    descripcion: 'Recorre la lista comparando vecinos e intercambiándolos si están en desorden; cada pasada lleva el mayor al final.',
+    descripcion: 'Compara vecinos y los intercambia si están en desorden; cada pasada lleva el mayor al final y se detiene si una pasada no mueve nada.',
   },
   insertion: {
     nombre: 'Insertion Sort', generador: insertionSort, fuente: FUENTES_PYTHON.insertion,
@@ -77,9 +77,8 @@ export const ALGORITMOS = Object.freeze({
     nombre: 'Merge Sort', generador: mergeSort, fuente: FUENTES_PYTHON.merge,
     categoria: 'divide-y-venceras',
     mejor: 'O(n log n)', promedio: 'O(n log n)', peor: 'O(n log n)',
-    // El original compara con `<`: ante un empate toma el de la derecha
-    // primero, así que esta implementación no conserva el orden de los iguales.
-    espacio: 'O(n)', estable: 'No',
+    // Compara con `<=`: ante un empate toma primero el de la izquierda.
+    espacio: 'O(n)', estable: 'Sí',
     descripcion: 'Divide la lista en mitades, ordena cada una y las mezcla tomando siempre el menor de los dos frentes.',
   },
   quick: {

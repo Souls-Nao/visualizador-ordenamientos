@@ -8,9 +8,9 @@
  * fila de barras. Esta versión trabaja con índices lo/hi (hi excluido) sobre
  * un solo arreglo, conservando todo lo demás:
  * - divide en el mismo punto: mid - lo = (hi - lo) // 2 = len(arr) // 2;
- * - copia las dos mitades (izquierda, derecha) antes de mezclar;
- * - compara con el mismo `<`, así que hace las mismas comparaciones y
- *   escrituras que el original.
+ * - copia las dos mitades (izquierda, derecha) antes de mezclar.
+ * El único cambio de lógica es comparar con `<=` en lugar de `<`: ante un
+ * empate toma primero el de la izquierda, lo que hace a Merge Sort estable.
  *
  * El código que se muestra en pantalla es esta misma versión, escrita en
  * Python (FUENTES_PYTHON.merge).
@@ -55,7 +55,7 @@ export function* mergeSort(arregloInicial) {
     while (i < izquierda.length && j < derecha.length) {
       yield crearEventoComparar(lo + i, mid + j, LINEA.COMPARAR);
 
-      if (izquierda[i] < derecha[j]) {
+      if (izquierda[i] <= derecha[j]) {
         yield crearEventoEscribir(k, izquierda[i], LINEA.ESCRIBIR_IZQUIERDA);
         arr[k] = izquierda[i];
         i++;

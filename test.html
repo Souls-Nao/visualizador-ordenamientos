@@ -22,7 +22,8 @@
   <p>
     Cada algoritmo del registro se ejecuta con varias listas. Los eventos se aplican sobre una copia
     (un "espejo") y el resultado se compara con <code>Array.prototype.sort</code>. Los conteos se
-    comparan con los que produce <code>docs/referencia/ordenamientos.py</code>.
+    comparan con los que produce el mismo código Python que muestra la página
+    (<code>docs/referencia/conteos.py</code>).
   </p>
   <p id="resumen" class="resumen-pruebas">Ejecutando…</p>
   <table>
@@ -37,24 +38,21 @@
   import { generarDatos, PATRONES } from './js/core/datos.js';
 
   /*
-   * Conteos del Python original (comparaciones entre elementos, movimientos)
-   * medidos con una copia instrumentada de ordenamientos.py. Un movimiento es
-   * cada intercambio o escritura sobre el arreglo. Quick Sort no aparece
-   * porque su versión animada es en el lugar y no crea listas como el original.
+   * Conteos de referencia generados con docs/referencia/conteos.py, que
+   * ejecuta el mismo código Python que muestra la página (fuentesPython.js).
+   * Cada par es (comparaciones, escrituras); un intercambio cuenta como 2
+   * escrituras, igual que `a, b = b, a` en Python.
    */
-  const LISTAS_PYTHON = {
-    invertida5: [5, 4, 3, 2, 1],
-    duplicados10: [3, 1, 4, 1, 5, 9, 2, 6, 5, 3],
-    aleatoria30: [15, 40, 64, 65, 82, 13, 28, 76, 79, 71, 53, 100, 73, 70, 93, 99, 98, 62,
-                  96, 98, 75, 56, 30, 0, 78, 10, 14, 36, 12, 57],
-  };
+  const LISTAS_PYTHON = {"invertida5": [5, 4, 3, 2, 1], "ordenada10": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "duplicados10": [3, 1, 4, 1, 5, 9, 2, 6, 5, 3], "aleatoria30": [15, 40, 64, 65, 82, 13, 28, 76, 79, 71, 53, 100, 73, 70, 93, 99, 98, 62, 96, 98, 75, 56, 30, 0, 78, 10, 14, 36, 12, 57]};
   const CONTEOS_PYTHON = {
-    invertida5: { selection: [10, 4], bubble: [20, 10], insertion: [10, 14], gnome: [20, 10],
-                  exchange: [10, 10], stooge: [40, 4], merge: [7, 12] },
-    duplicados10: { selection: [45, 9], bubble: [90, 15], insertion: [23, 24], gnome: [38, 15],
-                    exchange: [45, 14], stooge: [364, 13], merge: [23, 34] },
-    aleatoria30: { selection: [435, 29], bubble: [870, 236], insertion: [263, 265], gnome: [499, 236],
-                   exchange: [435, 226], stooge: [9841, 220], merge: [108, 148] },
+    selection: {"invertida5": [10, 4], "ordenada10": [45, 0], "duplicados10": [45, 16], "aleatoria30": [435, 54]},
+    bubble: {"invertida5": [10, 20], "ordenada10": [9, 0], "duplicados10": [39, 30], "aleatoria30": [432, 472]},
+    insertion: {"invertida5": [10, 14], "ordenada10": [9, 9], "duplicados10": [23, 24], "aleatoria30": [263, 265]},
+    gnome: {"invertida5": [20, 20], "ordenada10": [9, 0], "duplicados10": [38, 30], "aleatoria30": [499, 472]},
+    exchange: {"invertida5": [10, 20], "ordenada10": [45, 0], "duplicados10": [45, 28], "aleatoria30": [435, 452]},
+    stooge: {"invertida5": [40, 8], "ordenada10": [364, 0], "duplicados10": [364, 26], "aleatoria30": [9841, 440]},
+    merge: {"invertida5": [7, 12], "ordenada10": [15, 34], "duplicados10": [22, 34], "aleatoria30": [109, 148]},
+    quick: {"invertida5": [14, 12], "ordenada10": [43, 42], "duplicados10": [42, 44], "aleatoria30": [228, 302]},
   };
 
   /** Stooge Sort crece como n^2.7: en las listas aleatorias se limita el tamaño. */
@@ -67,7 +65,7 @@
   function ejecutar(id, lista) {
     const { generador, fuente } = ALGORITMOS[id];
     const espejo = [...lista];
-    const conteo = { comparaciones: 0, movimientos: 0 };
+    const conteo = { comparaciones: 0, escrituras: 0 };
     const problemas = [];
     const eventos = [...generador(lista)];
 
@@ -92,12 +90,12 @@
         case TIPOS_EVENTO.INTERCAMBIAR: {
           const [i, j] = evento.indices;
           [espejo[i], espejo[j]] = [espejo[j], espejo[i]];
-          conteo.movimientos++;
+          conteo.escrituras += 2;
           break;
         }
         case TIPOS_EVENTO.ESCRIBIR:
           espejo[evento.indices[0]] = evento.value;
-          conteo.movimientos++;
+          conteo.escrituras++;
           break;
       }
     });
@@ -158,13 +156,12 @@
     reportar(id, 'Ordena 27 listas (casos borde y 4 patrones) y respeta el contrato de eventos',
              errores.length === 0, errores.slice(0, 3).join(' · '));
 
-    // 2) Mismos conteos que el Python original.
+    // 2) Mismas comparaciones y escrituras que el código Python mostrado.
     for (const [nombre, lista] of Object.entries(LISTAS_PYTHON)) {
-      const esperado = CONTEOS_PYTHON[nombre][id];
-      if (!esperado) continue;
+      const esperado = CONTEOS_PYTHON[id][nombre];
       const { conteo } = ejecutar(id, lista);
-      const obtenido = [conteo.comparaciones, conteo.movimientos];
-      reportar(id, `Conteos iguales a Python con ${nombre} (comparaciones, movimientos) = (${esperado})`,
+      const obtenido = [conteo.comparaciones, conteo.escrituras];
+      reportar(id, `Igual al Python mostrado con ${nombre}: (comparaciones, escrituras) = (${esperado})`,
                iguales(obtenido, esperado), `obtuvo (${obtenido})`);
     }
 
