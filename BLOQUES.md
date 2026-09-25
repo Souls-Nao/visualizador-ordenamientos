@@ -57,7 +57,7 @@ terminarlo se actualiza su ficha y la bitácora.
 | B06 | Panel de código y líneas de Python | D-14 | B03 | H4 | ✅ |
 | B07 | Métricas: contadores y mensaje | D-13 | B01 | H3 | ✅ |
 | B08 | Visualizador: paneles, escena y controles | D-12, D-13 (UI) | B02–B07 | H3 | ✅ |
-| B09 | Comparación: varios paneles y resumen | D-15, D-16 | B08 | H4 | ⬜ |
+| B09 | Comparación: varios paneles y resumen | D-15, D-16 | B08 | H4 | ✅ |
 | B10 | Benchmark: versiones fieles y Worker | D-17, D-18 | B02, B03 | H5 | ⬜ |
 | B11 | Benchmark: gráficas, tabla y CSV | D-19, D-24 (CSV) | B10 | H5 | ⬜ |
 | B12 | Pulido, pestañas y extras | D-20, D-23, D-24 | B09, B11 | H5 | ⬜ |
@@ -574,21 +574,31 @@ selección, paso a paso, reinicio, varios paneles, cambio de panel activo, lími
 
 ---
 
-### B09: Comparación: varios paneles y resumen ⬜
+### B09: Comparación: varios paneles y resumen ✅
 
-- **Tareas:** D-15, D-16 · **Depende de:** B08
-- **Archivos:** amplía `js/ui/escena.js` y `js/ui/controles.js` (la escena base ya existe desde B08)
+- **Tareas:** D-15, D-16 · **Depende de:** B08 · **Commits:** ver bitácora
+- **Archivos:** amplía `js/ui/escena.js`, `js/ui/controles.js`, `js/ui/ficha.js` y `js/main.js`
 
-**Exporta (contrato):**
+**Exporta (contrato, se suma a B08):**
 ```js
-// escena.js agrega: opción alTerminarTodos y  get resumen
-// resumen: [{ id, nombre, comparaciones, movimientos, pasos, llegada }]
+// escena.js
+crearEscena({ ..., alTerminarTodos(resumen) })   // nueva opción
+escena.resumen   // [{ id, nombre, complejidad, comparaciones, intercambios, escrituras,
+                 //    movimientos, pasos, llegada: number|null }] ordenado por llegada
+escena.estado.llegada   // ids en orden de llegada
+
+// ficha.js
 export function pintarResumen(tabla, resumen) {}
 ```
-- Ya resuelto en B08: misma `listaBase` para todos, un reproductor común y varios paneles.
-- Falta: botones Todos / Ninguno, orden de llegada, tabla resumen y ajuste del grid.
-**Criterio:** con 1, 3 u 8 algoritmos aparecen esos paneles; terminan en momentos distintos y el
-resumen muestra valores correctos.
+**Reglas:**
+- Todos los paneles avanzan los mismos pasos por cuadro, así que llega primero el que necesita menos
+  pasos. Si varios terminan en el mismo cuadro, se ordenan por pasos.
+- `alTerminarTodos` se llama una vez, cuando el último panel termina; `main.js` pinta
+  `#tabla-resumen` y muestra `#zona-resumen`. Al volver al estado `detenido` (reiniciar, nueva lista,
+  cambio de selección) se oculta.
+- Todos / Ninguno marcan o desmarcan las casillas y aplican la selección (con el límite de Stooge).
+**Verificación:** 2 pruebas nuevas (72/72) y prueba en la página: Todos → 8 paneles, Ninguno →
+botones desactivados, 3 algoritmos → resumen en orden, Reiniciar lo oculta.
 
 ---
 
@@ -700,7 +710,8 @@ export function descargarCSV(resultados, nombre = 'benchmark.csv') {}
 | 25/09/2026 | B05 | Reproductor con acumulador y velocidad logarítmica; bloque cerrado ✅ | `ced8bc9`, `64301cb` | — |
 | 25/09/2026 | B06 | Panel de código con línea activa y prueba de correspondencia; bloque cerrado ✅ | `5be5472`, `0545a9a` | — |
 | 25/09/2026 | B07 | Contadores y mensajes de estado; bloque cerrado ✅ | `ed31e6a`, `1243663` | — |
-| 25/09/2026 | B08 | Panel de algoritmo, escena, controles, ficha y leyenda; visualizador funcional; bloque cerrado ✅ | ver `git log --grep B08` | B09 (comparación) |
+| 25/09/2026 | B08 | Panel de algoritmo, escena, controles, ficha y leyenda; visualizador funcional; bloque cerrado ✅ | `ea89650`, `8601b6f` | — |
+| 25/09/2026 | B09 | Orden de llegada, tabla resumen, Todos / Ninguno; bloque cerrado ✅ | ver `git log --grep B09` | B10 (benchmark) |
 
 ---
 

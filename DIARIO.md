@@ -6,6 +6,30 @@ La entrada más reciente va arriba.
 
 ---
 
+## 25/09/2026 · B09: Comparación
+
+**Archivos:** `escena.js`, `controles.js`, `ficha.js`, `main.js` (se amplían).
+
+**Orden de llegada.** Todos los paneles reciben los mismos pasos en cada cuadro, así que el primero en
+terminar es el que necesita menos pasos: la animación muestra la diferencia de complejidad. En
+`alAvanzar` la escena anota qué paneles terminaron en ese cuadro; si terminan varios a la vez, los
+ordena por número de pasos para que el orden sea justo.
+
+**Resumen (evidencia cuantitativa).** Cuando el último panel termina, la escena llama a
+`alTerminarTodos(resumen)` y `main.js` muestra la tabla con: llegada, algoritmo, complejidad
+promedio, comparaciones, intercambios, escrituras y pasos. La tabla se oculta cuando el reproductor
+vuelve a `detenido` (Reiniciar, Nueva lista o cambio de selección), porque esos datos ya no
+corresponden a lo que se ve.
+
+**Todos / Ninguno.** Marcan o desmarcan todas las casillas y aplican la selección con la misma
+función que el cambio manual, así respetan el límite de Stooge.
+
+**Pruebas (72/72).** Una escena con 4 algoritmos sobre la misma lista corre paso a paso hasta el
+final: el resumen llega una sola vez, en orden de pasos y con los mismos conteos que
+`contarEjecucion`. Reiniciar borra la llegada y conserva la lista.
+
+---
+
 ## 25/09/2026 · B08: Visualizador funcional
 
 **Archivos:** `js/ui/panelAlgoritmo.js`, `js/ui/escena.js`, `js/ui/controles.js`, `js/ui/ficha.js`,
