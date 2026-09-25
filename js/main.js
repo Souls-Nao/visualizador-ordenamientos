@@ -15,6 +15,8 @@ import { iniciarControles } from './ui/controles.js';
 import { pintarFicha, pintarLeyenda, pintarResumen } from './ui/ficha.js';
 import { ESTADOS_REPRODUCTOR } from './motor/reproductor.js';
 import { iniciarBenchmark } from './benchmark/benchmark.js';
+import { dibujarGraficas, pintarTablaBench, limpiarResultados } from './benchmark/graficas.js';
+import { descargarCSV } from './benchmark/csv.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -49,5 +51,22 @@ const escena = crearEscena({
 pintarLeyenda($('zona-leyenda'));
 controles = iniciarControles(escena);
 
-// Bloque 10 — Benchmark. B11 dibuja las gráficas y la tabla con los resultados.
-iniciarBenchmark();
+// Bloque 10 — Benchmark (medición en Web Worker).
+// Bloque 11 — Gráficas, tabla y exportación a CSV de los resultados.
+let ultimosResultados = null;
+iniciarBenchmark({
+  alIniciar: () => {
+    ultimosResultados = null;
+    $('btn-bench-csv').disabled = true;
+    limpiarResultados($('zona-graficas'), $('tabla-bench'));
+  },
+  alTerminar: (resultados) => {
+    ultimosResultados = resultados;
+    dibujarGraficas($('zona-graficas'), resultados);
+    pintarTablaBench($('tabla-bench'), resultados);
+    $('btn-bench-csv').disabled = false;
+  },
+});
+$('btn-bench-csv').addEventListener('click', () => {
+  if (ultimosResultados) descargarCSV(ultimosResultados);
+});

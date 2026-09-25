@@ -322,6 +322,16 @@
   gap: var(--esp-3);
 }
 
+/* Chart.js necesita un contenedor con altura y position relative. */
+.grafica {
+  position: relative;
+  height: 320px;
+  padding: var(--esp-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+}
+
 @media (max-width: 700px) {
   .graficas {
     grid-template-columns: 1fr;
