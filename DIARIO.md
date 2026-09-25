@@ -6,6 +6,28 @@ La entrada más reciente va arriba.
 
 ---
 
+## 25/09/2026 · B13: README, pruebas finales y despliegue
+
+**README.** Cubre todo lo que pide la actividad: URL publicada, integrantes, instrucciones de
+ejecución, descripción de los algoritmos, capturas, documentación y código fuente. Además explica la
+arquitectura, dónde se calcula cada métrica, las pruebas, las limitaciones conocidas y el uso de IA.
+
+**Capturas.** En la computadora no hay Chrome ni Edge para sacarlas en modo automático. Se generaron
+desde el navegador integrado con html2canvas (solo para tomarlas, no forma parte del proyecto) y un
+servidor temporal que guardó los PNG en `docs/capturas/`. html2canvas no dibuja los deslizadores,
+así que en las capturas se reemplazaron por una barra equivalente.
+
+**Bug encontrado al tomar las capturas.** La velocidad inicial mostraba 19 pasos/s en lugar de 20:
+desde B12 se convertía velocidad → deslizador → velocidad, y la escala logarítmica redondea. Ahora la
+velocidad inicial se usa tal cual y el deslizador solo se coloca cerca.
+
+**Pruebas finales en la URL pública.** 76/76 pruebas, los 8 paneles animándose, las 4 pestañas,
+benchmark con sus 4 gráficas y sin errores en consola. Repositorio, tablero y sitio abren sin sesión.
+
+**Lo que falta (lo hace el integrante):** revisar el README, actualizar el tablero y entregar.
+
+---
+
 ## 25/09/2026 · B12: Pulido y extras
 
 **Archivos:** `js/ui/preferencias.js`, `js/ui/atajos.js` y ajustes en `controles.js`, `ficha.js`,

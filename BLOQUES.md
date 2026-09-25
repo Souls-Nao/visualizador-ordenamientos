@@ -61,7 +61,7 @@ terminarlo se actualiza su ficha y la bitácora.
 | B10 | Benchmark: versiones fieles y Worker | D-17, D-18 | B02, B03 | H5 | ✅ |
 | B11 | Benchmark: gráficas, tabla y CSV | D-19, D-24 (CSV) | B10 | H5 | ✅ |
 | B12 | Pulido, pestañas y extras | D-20, D-23, D-24 | B09, B11 | H5 | ✅ |
-| B13 | Documentación, pruebas finales y entrega | D-21, T-03, D-22, E-01 | todos | H5–H6 | ⬜ |
+| B13 | Documentación, pruebas finales y entrega | D-21, T-03, D-22, E-01 | todos | H5–H6 | ✅ (E-01 pendiente) |
 
 ### Grafo de dependencias
 
@@ -115,7 +115,7 @@ Los archivos marcados con ✔ ya existen en el repositorio.
 /
 ├── index.html                    B00  maqueta con todos los IDs de la sección 3.3
 ├── test.html                  ✔  B03  pruebas; crece con cada bloque
-├── README.md                     B13
+├── README.md                  ✔  B13
 ├── BLOQUES.md                        este archivo
 ├── .nojekyll                     B00  GitHub Pages sirve los archivos tal cual
 ├── css/
@@ -168,7 +168,7 @@ Los archivos marcados con ✔ ya existen en el repositorio.
     │   └── conteos.py            B03  conteos esperados de test.html
     ├── pruebas.md                B07  (opcional: los conteos ya se prueban en test.html)
     ├── boceto/                       entregable 1
-    └── capturas/                 B13
+    └── capturas/              ✔  B13  5 capturas para el README
 ```
 
 ---
@@ -690,13 +690,22 @@ las 4 pestañas caben sin desplazarse.
 
 ---
 
-### B13: Documentación, pruebas finales y entrega ⬜
+### B13: Documentación, pruebas finales y entrega ✅
 
-- **Tareas:** D-21, T-03, D-22, E-01 · **Depende de:** todos
-- **README:** descripción · URL publicada · integrantes · cómo ejecutar (`python -m http.server`) ·
-  los 8 algoritmos · arquitectura (enlace a este archivo) · capturas · uso de IA · dónde se calcula
-  cada métrica (`metricas.js` B07; tiempos en `worker.js` B10).
-**Criterio:** la URL pública muestra la versión final; el repo y el tablero abren en incógnito.
+- **Tareas:** D-21, T-03, D-22 (hechas) · E-01 (entrega, la hace el integrante) · **Commits:** ver bitácora
+- **Archivos:** `README.md`, `docs/capturas/*.png`; corrección de la velocidad inicial en `controles.js`
+
+**README:** descripción, URL publicada, equipo, funciones, cómo ejecutar y probar, tabla de los 8
+algoritmos, relación con la práctica, arquitectura, dónde se calcula cada métrica, estructura,
+documentación, pruebas y limitaciones conocidas, tecnologías, uso de IA y referencias.
+
+**Pruebas finales (T-03), en la URL pública:** `test.html` 76/76 · Todos (8 paneles) y 300 pasos ·
+las 4 pestañas · benchmark de 100 a 500 con 4 gráficas · sin errores en consola.
+**Despliegue y enlaces (D-22):** repositorio, tablero y sitio responden 200 sin sesión iniciada.
+**Fallos conocidos:** documentados en el README (sección Pruebas).
+
+**Pendiente del integrante (E-01):** revisar el README, mover las tarjetas del tablero a *Done* y
+realizar la entrega.
 
 ---
 
@@ -752,7 +761,8 @@ las 4 pestañas caben sin desplazarse.
 | 25/09/2026 | B09 | Orden de llegada, tabla resumen, Todos / Ninguno; bloque cerrado ✅ | `e9a1b62`, `89f60ed` | — |
 | 25/09/2026 | B10 | Versiones fieles, Web Worker, validación y progreso del benchmark; bloque cerrado ✅ | `38590ae`, `e6d44c2` | — |
 | 25/09/2026 | B11 | Gráficas con Chart.js, tabla, CSV y medición por lotes; bloque cerrado ✅ | `b89f5f2`, `f3089b7` | — |
-| 25/09/2026 | B12 | Preferencias, atajos, pestaña Algoritmos y ajustes para celular; bloque cerrado ✅ | ver `git log --grep B12` | B13 (README y entrega) |
+| 25/09/2026 | B12 | Preferencias, atajos, pestaña Algoritmos y ajustes para celular; bloque cerrado ✅ | `10cf24b`, `50fe4e0` | — |
+| 25/09/2026 | B13 | README, capturas, corrección de velocidad inicial, pruebas finales en la URL pública | `7b3a8c1`, `d4acb83` | Entrega (E-01) |
 
 ---
 
