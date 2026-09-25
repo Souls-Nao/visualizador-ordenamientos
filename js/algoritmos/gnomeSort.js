@@ -1,36 +1,42 @@
 /**
  * js/algoritmos/gnomeSort.js
+ * ─────────────────────────────────────────────────────────────────────────
+ * Bloque 03 — Gnome Sort como generador.
+ *
+ * Traducción de gnome_sort (docs/referencia/ordenamientos.py). La condición
+ * `if i == 0 or arr[i] >= arr[i - 1]` se evalúa en cortocircuito: cuando
+ * i == 0 no hay comparación entre elementos, solo se avanza.
  */
-import { 
-  crearEventoComparar, 
-  crearEventoIntercambiar, 
-  crearEventoOrdenado, 
-  crearEventoTerminado 
+import {
+  crearEventoComparar,
+  crearEventoIntercambiar,
+  crearEventoTerminado,
 } from '../core/eventos.js';
+
+/** Líneas de FUENTES_PYTHON.gnome que representa cada evento. */
+const LINEA = Object.freeze({ COMPARAR: 6, INTERCAMBIAR: 9 });
 
 export function* gnomeSort(arregloInicial) {
   const arr = [...arregloInicial];
-  let index = 0;
+  const n = arr.length;
+  let i = 0;
 
-  while (index < arr.length) {
-    if (index === 0) {
-      index++;
+  while (i < n) {
+    if (i === 0) {
+      i++;
+      continue;
     }
-    yield crearEventoComparar(index, index - 1, 0);
-    
-    if (arr[index] >= arr[index - 1]) {
-      index++;
+
+    yield crearEventoComparar(i, i - 1, LINEA.COMPARAR);
+
+    if (arr[i] >= arr[i - 1]) {
+      i++;
     } else {
-      yield crearEventoIntercambiar(index, index - 1, 0);
-      let temp = arr[index];
-      arr[index] = arr[index - 1];
-      arr[index - 1] = temp;
-      index--;
+      yield crearEventoIntercambiar(i, i - 1, LINEA.INTERCAMBIAR);
+      [arr[i], arr[i - 1]] = [arr[i - 1], arr[i]];
+      i--;
     }
   }
 
-  for (let i = 0; i < arr.length; i++) {
-    yield crearEventoOrdenado(i, 0);
-  }
   yield crearEventoTerminado();
 }
