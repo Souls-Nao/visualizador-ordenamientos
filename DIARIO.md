@@ -6,6 +6,32 @@ La entrada más reciente va arriba.
 
 ---
 
+## 25/09/2026 · B12: Pulido y extras
+
+**Archivos:** `js/ui/preferencias.js`, `js/ui/atajos.js` y ajustes en `controles.js`, `ficha.js`,
+`main.js`, `index.html` y CSS.
+
+**Preferencias.** Se recuerdan la selección de algoritmos, el tamaño, el patrón y la velocidad
+(localStorage, clave `vo.preferencias`). Todo va en try/catch: si el navegador bloquea el
+almacenamiento, la página usa los valores por defecto. Al cargar se descarta lo que ya no sea válido
+(un id que no exista o un patrón desconocido).
+
+**Atajos.** Espacio (reproducir/pausar), → (paso), R (reiniciar) y N (nueva lista). En lugar de
+llamar a la escena, el atajo **pulsa el botón**: así respeta si está deshabilitado y no se duplica
+lógica. No actúa si el foco está en un campo o botón, porque ahí la tecla ya hace algo (por ejemplo,
+→ mueve un deslizador). Hay una línea de ayuda debajo de la velocidad.
+
+**Pestaña Algoritmos.** Tabla con tipo, complejidad (mejor, promedio y peor), espacio, estabilidad
+e idea de cada algoritmo, generada desde el mismo registro que la ficha, así nunca se contradicen.
+
+**Celular.** Se revisaron las 4 pestañas a 360 y 375 px, también con los 8 paneles: no hay
+desplazamiento horizontal. Las pestañas se achican un poco para caber sin desplazarse.
+
+**Nota:** al probar, el navegador guardaba en caché el CSS viejo. GitHub Pages también guarda en
+caché unos minutos: después de publicar puede hacer falta recargar con Ctrl + F5.
+
+---
+
 ## 25/09/2026 · B11: Gráficas, tabla y CSV
 
 **Archivos:** `js/benchmark/graficas.js`, `csv.js`, `vendor/chart.umd.min.js`, ajuste en `worker.js`.

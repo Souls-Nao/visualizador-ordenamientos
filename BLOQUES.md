@@ -60,7 +60,7 @@ terminarlo se actualiza su ficha y la bitácora.
 | B09 | Comparación: varios paneles y resumen | D-15, D-16 | B08 | H4 | ✅ |
 | B10 | Benchmark: versiones fieles y Worker | D-17, D-18 | B02, B03 | H5 | ✅ |
 | B11 | Benchmark: gráficas, tabla y CSV | D-19, D-24 (CSV) | B10 | H5 | ✅ |
-| B12 | Pulido, pestañas y extras | D-20, D-23, D-24 | B09, B11 | H5 | ⬜ |
+| B12 | Pulido, pestañas y extras | D-20, D-23, D-24 | B09, B11 | H5 | ✅ |
 | B13 | Documentación, pruebas finales y entrega | D-21, T-03, D-22, E-01 | todos | H5–H6 | ⬜ |
 
 ### Grafo de dependencias
@@ -147,6 +147,8 @@ Los archivos marcados con ✔ ya existen en el repositorio.
 │   │   └── reproductor.js     ✔  B05
 │   ├── ui/
 │   │   ├── pestanas.js           B00  cambio de sección
+│   │   ├── preferencias.js    ✔  B12
+│   │   ├── atajos.js          ✔  B12
 │   │   ├── panelCodigo.js     ✔  B06
 │   │   ├── panelAlgoritmo.js  ✔  B08
 │   │   ├── controles.js       ✔  B08
@@ -264,6 +266,7 @@ Los define B00. Ningún JS usa un ID que no esté aquí; si hace falta uno nuevo
 | `.aviso`, `.aviso--error` | mensajes | B00 |
 | `.grafica` | contenedor de cada gráfica de Chart.js | B11 |
 | `.marcador` | contenido provisional que un bloque posterior reemplaza | B00 |
+| `.atajos`, `kbd` | ayuda de atajos de teclado | B12 |
 
 ---
 
@@ -662,12 +665,28 @@ duplica (siguen 4 instancias de Chart).
 
 ---
 
-### B12: Pulido, pestañas y extras ⬜
+### B12: Pulido, pestañas y extras ✅
 
-- **Tareas:** D-20, D-23, D-24 · **Depende de:** B09, B11
-- **Exporta:** `iniciarAtajos(escena)` (Espacio, →, R) · `cargarPreferencias()` / `guardarPreferencias(p)`
-  con `CLAVE_PREFERENCIAS` y try/catch · tabla `#tabla-algoritmos` generada desde `ALGORITMOS`.
-**Criterio:** sin desbordes horizontales, controles usables con teclado, mensajes claros.
+- **Tareas:** D-20, D-23, D-24 · **Depende de:** B09, B11 · **Commits:** ver bitácora
+- **Archivos:** `js/ui/preferencias.js`, `js/ui/atajos.js`; amplía `controles.js`, `ficha.js`,
+  `main.js`, `index.html`, `componentes.css` y `layout.css`
+
+**Exporta (contrato):**
+```js
+// preferencias.js
+export function cargarPreferencias() {}     // { seleccionados, tamano, patron, velocidad } | null
+export function guardarPreferencias(p) {}   // localStorage[CLAVE_PREFERENCIAS], con try/catch
+// atajos.js
+export function iniciarAtajos() {}          // Espacio, →, R, N; pulsa el botón correspondiente
+// ficha.js
+export function pintarTablaAlgoritmos(tabla) {}   // #tabla-algoritmos desde ALGORITMOS
+```
+**Reglas:** los atajos solo actúan en la pestaña Visualizador y si el foco no está en un campo o
+botón; respetan botones deshabilitados · las preferencias inválidas se ignoran y se usan los valores
+por defecto · se guardan al cambiar selección, tamaño, patrón o velocidad.
+**Verificación:** 76/76; en la página: preferencias recordadas al recargar, atajos → y R, tabla de 8
+algoritmos; sin desborde horizontal a 360/375 px en las 4 pestañas (también con los 8 paneles) y
+las 4 pestañas caben sin desplazarse.
 
 ---
 
@@ -732,7 +751,8 @@ duplica (siguen 4 instancias de Chart).
 | 25/09/2026 | B08 | Panel de algoritmo, escena, controles, ficha y leyenda; visualizador funcional; bloque cerrado ✅ | `ea89650`, `8601b6f` | — |
 | 25/09/2026 | B09 | Orden de llegada, tabla resumen, Todos / Ninguno; bloque cerrado ✅ | `e9a1b62`, `89f60ed` | — |
 | 25/09/2026 | B10 | Versiones fieles, Web Worker, validación y progreso del benchmark; bloque cerrado ✅ | `38590ae`, `e6d44c2` | — |
-| 25/09/2026 | B11 | Gráficas con Chart.js, tabla, CSV y medición por lotes; bloque cerrado ✅ | ver `git log --grep B11` | B12 (pulido) |
+| 25/09/2026 | B11 | Gráficas con Chart.js, tabla, CSV y medición por lotes; bloque cerrado ✅ | `b89f5f2`, `f3089b7` | — |
+| 25/09/2026 | B12 | Preferencias, atajos, pestaña Algoritmos y ajustes para celular; bloque cerrado ✅ | ver `git log --grep B12` | B13 (README y entrega) |
 
 ---
 
