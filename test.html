@@ -2,37 +2,184 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Tests de Algoritmos - Bloque 03</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pruebas de algoritmos</title>
+  <link rel="stylesheet" href="css/base.css">
+  <style>
+    main { max-width: 1000px; margin: 0 auto; padding: 24px; display: grid; gap: 16px; }
+    .resumen-pruebas { font-size: 1.1rem; font-weight: 600; }
+    .ok { color: #1b8a3a; }
+    .fallo { color: var(--error); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; background: var(--superficie); }
+    th, td { padding: 6px 10px; border-bottom: 1px solid var(--borde); text-align: left; vertical-align: top; }
+    th { background: var(--superficie-2); }
+    code { font-family: var(--fuente-mono); }
+  </style>
 </head>
 <body>
-  <h1>Pruebas de generadores vs Array.prototype.sort</h1>
-  <div id="resultados"></div>
+<main>
+  <h1>Pruebas de los algoritmos (Bloque 03)</h1>
+  <p>
+    Cada algoritmo del registro se ejecuta con varias listas. Los eventos se aplican sobre una copia
+    (un "espejo") y el resultado se compara con <code>Array.prototype.sort</code>. Los conteos se
+    comparan con los que produce <code>docs/referencia/ordenamientos.py</code>.
+  </p>
+  <p id="resumen" class="resumen-pruebas">Ejecutando…</p>
+  <table>
+    <thead><tr><th>Algoritmo</th><th>Prueba</th><th>Resultado</th></tr></thead>
+    <tbody id="filas"></tbody>
+  </table>
+</main>
 
-  <script type="module">
-    import { ALGORITMOS } from './js/algoritmos/index.js';
-    import { TIPOS_EVENTO } from './js/core/eventos.js';
+<script type="module">
+  import { ALGORITMOS } from './js/algoritmos/index.js';
+  import { TIPOS_EVENTO } from './js/core/eventos.js';
+  import { generarDatos, PATRONES } from './js/core/datos.js';
 
-    const testArray = [45, 12, 89, 33, 1, 9, 22, 100, 50, 77];
-    const arrayEsperado = [...testArray].sort((a, b) => a - b);
-    const divResultados = document.getElementById('resultados');
+  /*
+   * Conteos del Python original (comparaciones entre elementos, movimientos)
+   * medidos con una copia instrumentada de ordenamientos.py. Un movimiento es
+   * cada intercambio o escritura sobre el arreglo. Quick Sort no aparece
+   * porque su versión animada es en el lugar y no crea listas como el original.
+   */
+  const LISTAS_PYTHON = {
+    invertida5: [5, 4, 3, 2, 1],
+    duplicados10: [3, 1, 4, 1, 5, 9, 2, 6, 5, 3],
+    aleatoria30: [15, 40, 64, 65, 82, 13, 28, 76, 79, 71, 53, 100, 73, 70, 93, 99, 98, 62,
+                  96, 98, 75, 56, 30, 0, 78, 10, 14, 36, 12, 57],
+  };
+  const CONTEOS_PYTHON = {
+    invertida5: { selection: [10, 4], bubble: [20, 10], insertion: [10, 14], gnome: [20, 10],
+                  exchange: [10, 10], stooge: [40, 4], merge: [7, 12] },
+    duplicados10: { selection: [45, 9], bubble: [90, 15], insertion: [23, 24], gnome: [38, 15],
+                    exchange: [45, 14], stooge: [364, 13], merge: [23, 34] },
+    aleatoria30: { selection: [435, 29], bubble: [870, 236], insertion: [263, 265], gnome: [499, 236],
+                   exchange: [435, 226], stooge: [9841, 220], merge: [108, 148] },
+  };
 
-    Object.entries(ALGORITMOS).forEach(([clave, info]) => {
-      // Espejo local del arreglo para simular el consumo de eventos
-      const espejo = [...testArray];
-      const generador = info.generador(espejo);
-      
-      for (let evento of generador) {
-        if (evento.type === TIPOS_EVENTO.INTERCAMBIAR) {
-          const [i, j] = evento.indices;
-          let temp = espejo[i]; espejo[i] = espejo[j]; espejo[j] = temp;
-        } else if (evento.type === TIPOS_EVENTO.ESCRIBIR) {
-          espejo[evento.indices[0]] = evento.value;
-        }
+  /** Stooge Sort crece como n^2.7: en las listas aleatorias se limita el tamaño. */
+  const TAMANO_MAX_PRUEBA = { stooge: 25 };
+
+  /**
+   * Ejecuta un generador completo aplicando sus eventos sobre un espejo.
+   * Devuelve el espejo final, los conteos y los problemas de forma encontrados.
+   */
+  function ejecutar(id, lista) {
+    const { generador, fuente } = ALGORITMOS[id];
+    const espejo = [...lista];
+    const conteo = { comparaciones: 0, movimientos: 0 };
+    const problemas = [];
+    const eventos = [...generador(lista)];
+
+    eventos.forEach((evento, posicion) => {
+      const esUltimo = posicion === eventos.length - 1;
+
+      if (evento.type === TIPOS_EVENTO.TERMINADO) {
+        if (!esUltimo) problemas.push(`done en la posición ${posicion}, no al final`);
+        return;
+      }
+      if (!Number.isInteger(evento.line) || evento.line < 1 || evento.line > fuente.length) {
+        problemas.push(`line ${evento.line} fuera de 1..${fuente.length} (${evento.type})`);
+      }
+      if (!evento.indices.every((i) => Number.isInteger(i) && i >= 0 && i < lista.length)) {
+        problemas.push(`índices fuera de rango: ${evento.indices} (${evento.type})`);
       }
 
-      const esCorrecto = espejo.join(',') === arrayEsperado.join(',');
-      divResultados.innerHTML += `<p><b>${info.nombre}:</b> ${esCorrecto ? '✅ PASÓ' : '❌ FALLÓ'} (Resultado: ${espejo.join(',')})</p>`;
+      switch (evento.type) {
+        case TIPOS_EVENTO.COMPARAR:
+          conteo.comparaciones++;
+          break;
+        case TIPOS_EVENTO.INTERCAMBIAR: {
+          const [i, j] = evento.indices;
+          [espejo[i], espejo[j]] = [espejo[j], espejo[i]];
+          conteo.movimientos++;
+          break;
+        }
+        case TIPOS_EVENTO.ESCRIBIR:
+          espejo[evento.indices[0]] = evento.value;
+          conteo.movimientos++;
+          break;
+      }
     });
-  </script>
+
+    if (eventos.at(-1)?.type !== TIPOS_EVENTO.TERMINADO) problemas.push('el último evento no es done');
+    return { espejo, conteo, problemas };
+  }
+
+  const ordenar = (lista) => [...lista].sort((a, b) => a - b);
+  const iguales = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
+
+  /** Casos de ordenamiento que se prueban en todos los algoritmos. */
+  function casos(id) {
+    const max = TAMANO_MAX_PRUEBA[id] ?? 80;
+    const lista = [
+      ['vacía', []],
+      ['un elemento', [7]],
+      ['dos elementos', [2, 1]],
+      ['todos iguales', [4, 4, 4, 4, 4]],
+      ['duplicados', [5, 3, 5, 1, 3, 5, 0, 1]],
+      ['ordenada (20)', Array.from({ length: 20 }, (_, i) => i)],
+      ['invertida (20)', Array.from({ length: 20 }, (_, i) => 20 - i)],
+    ];
+    for (const patron of Object.values(PATRONES)) {
+      for (let k = 0; k < 5; k++) {
+        const n = 2 + Math.floor(Math.random() * (max - 1));
+        lista.push([`${patron} (${n})`, generarDatos(n, patron)]);
+      }
+    }
+    return lista;
+  }
+
+  const filas = document.getElementById('filas');
+  let total = 0;
+  let fallidas = 0;
+
+  function reportar(id, prueba, ok, detalle = '') {
+    total++;
+    if (!ok) fallidas++;
+    const fila = filas.insertRow();
+    fila.insertCell().textContent = ALGORITMOS[id].nombre;
+    fila.insertCell().textContent = prueba;
+    const celda = fila.insertCell();
+    celda.className = ok ? 'ok' : 'fallo';
+    celda.textContent = ok ? '✔ pasó' : `✘ falló: ${detalle}`;
+  }
+
+  for (const id of Object.keys(ALGORITMOS)) {
+    // 1) Ordena bien, respeta el contrato de eventos y no modifica la entrada.
+    const errores = [];
+    for (const [nombre, lista] of casos(id)) {
+      const original = [...lista];
+      const { espejo, problemas } = ejecutar(id, lista);
+      if (!iguales(espejo, ordenar(original))) errores.push(`${nombre}: resultado ${espejo.join(',')}`);
+      if (!iguales(lista, original)) errores.push(`${nombre}: modificó la lista de entrada`);
+      if (problemas.length) errores.push(`${nombre}: ${problemas[0]}`);
+    }
+    reportar(id, 'Ordena 27 listas (casos borde y 4 patrones) y respeta el contrato de eventos',
+             errores.length === 0, errores.slice(0, 3).join(' · '));
+
+    // 2) Mismos conteos que el Python original.
+    for (const [nombre, lista] of Object.entries(LISTAS_PYTHON)) {
+      const esperado = CONTEOS_PYTHON[nombre][id];
+      if (!esperado) continue;
+      const { conteo } = ejecutar(id, lista);
+      const obtenido = [conteo.comparaciones, conteo.movimientos];
+      reportar(id, `Conteos iguales a Python con ${nombre} (comparaciones, movimientos) = (${esperado})`,
+               iguales(obtenido, esperado), `obtuvo (${obtenido})`);
+    }
+
+    // 3) La ficha tiene todos los campos.
+    const campos = ['nombre', 'generador', 'fuente', 'categoria', 'mejor', 'promedio', 'peor',
+                    'espacio', 'estable', 'descripcion'];
+    const faltan = campos.filter((c) => ALGORITMOS[id][c] === undefined);
+    reportar(id, 'El registro tiene todos los campos', faltan.length === 0, `faltan ${faltan}`);
+  }
+
+  const resumen = document.getElementById('resumen');
+  resumen.textContent = fallidas === 0
+    ? `✔ ${total} de ${total} pruebas pasaron`
+    : `✘ ${fallidas} de ${total} pruebas fallaron`;
+  resumen.className = `resumen-pruebas ${fallidas === 0 ? 'ok' : 'fallo'}`;
+</script>
 </body>
 </html>
