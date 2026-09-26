@@ -125,7 +125,7 @@
     grid-template-columns: 1fr;
   }
 
-  /* Las 4 pestañas caben en 360 px sin desplazarse. */
+  /* Las pestañas caben en 360 px sin desplazarse. */
   .pestana {
     padding: var(--esp-2) 6px;
     font-size: 0.8125rem;
