@@ -6,6 +6,21 @@ La entrada más reciente va arriba.
 
 ---
 
+## Propuestas pendientes de decidir (25/09/2026)
+
+Cambios que no se hicieron, para platicarlos. Ninguno es obligatorio para la actividad.
+
+1. **Velocidad máxima mayor.** Ahora que el tamaño es libre, 2000 pasos/s se queda corto: Bubble con
+   500 elementos (~125 000 pasos) tarda más de un minuto. Subir el máximo a 20 000 pasos/s es cambiar
+   una constante (`VELOCIDAD_MAX`); el deslizador logarítmico lo absorbe.
+2. **Botón "Ir al final".** Ejecuta lo que falta sin animar y muestra el resultado y el resumen al
+   instante. Útil para comparar con listas grandes sin esperar. Es poco código: `avanzar(Infinity)`.
+3. **Tiempo de ejecución en el resumen.** La actividad menciona "tiempo de ejecución" como posible
+   indicador. Sin el benchmark, se podría medir cuánto tarda cada algoritmo en ordenar la lista actual
+   sin animar y mostrarlo como otra columna del resumen.
+
+---
+
 ## 25/09/2026 · B14: Ajustes de alcance
 
 Revisión de los requisitos con el integrante.
