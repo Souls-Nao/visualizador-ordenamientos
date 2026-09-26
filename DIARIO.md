@@ -6,6 +6,67 @@ La entrada más reciente va arriba.
 
 ---
 
+## 25/09/2026 · B15: Ventana Crecimiento
+
+**Decisión:** de las propuestas para el requisito 8 se eligió la **A** (la gráfica de la práctica en
+Python), con comparaciones por defecto y la opción de ver tiempo.
+
+**Qué hace.** El botón **Ver crecimiento** (junto a Todos / Ninguno) pausa la animación y abre una
+ventana. Para los algoritmos seleccionados (o todos si no hay ninguno), mide 10 tamaños de n/10 hasta
+n y dibuja una línea por algoritmo, con los colores de `benchmark.py`. Debajo va la tabla con los datos.
+
+**Cómo mide** (`js/core/crecimiento.js`, sin DOM):
+- Igual que `calcular_tiempos` de la práctica: una lista aleatoria por tamaño y todos los algoritmos
+  ordenan esa misma lista.
+- **Comparaciones:** se recorre el generador sin animar con `contarEjecucion` (B07). No dependen de la
+  computadora, así que las curvas salen limpias. Se dibujan también n log n y n² punteadas como
+  referencia: se ve que Selection y Bubble siguen la forma de n² y Merge la de n log n.
+- **Tiempo (ms):** como en la práctica, con `performance.now()` y por lotes de al menos 5 ms (el reloj
+  del navegador redondea a ~0.1 ms). Al elegir tiempo, n sube a 1000: con listas pequeñas pesa más el
+  costo fijo de cada ejecución que el algoritmo, y Merge parecería más lento que Selection.
+- Entre un tamaño y otro se cede el control (`await setTimeout 0`) para mostrar el progreso y que la
+  página no se congele. Con n = 1000 y 5 algoritmos tarda menos de un segundo.
+- Stooge se omite con n > 200 (con n^2.71 tardaría varios segundos por punto).
+
+**Gráfica.** SVG hecho a mano, sin librerías (Chart.js se retiró en B14): rejilla, ejes con los tamaños
+medidos, curvas teóricas recortadas al área, y un punto por medición que muestra su valor al pasar el
+ratón.
+
+**Pruebas (78/78):** tamaños y conteo, medición de 3 algoritmos (crece con n, Stooge omitido, Merge <
+Bubble) y la gráfica (una línea por algoritmo, curvas teóricas solo con comparaciones).
+
+---
+
+## Propuestas para el requisito 8 (complejidad) (25/09/2026)
+
+Hoy ya existe: etiqueta de color por clase, ficha con mejor/promedio/peor caso, gráfica teórica
+"¿Cómo crece el trabajo?" y columna "Esperado para n" en el resumen. Opciones para ir más allá:
+
+**A. Ventana "Crecimiento" (la idea de la práctica en Python).** Un botón abre una ventana (`<dialog>`)
+con una gráfica como las de `benchmark.py`: eje X = tamaño n, eje Y = trabajo. Para cada algoritmo
+seleccionado se ejecuta sin animar con varios tamaños (por ejemplo 10, 20, … hasta el tamaño actual) y
+se dibuja una línea por algoritmo, con las curvas teóricas n, n log n y n² de fondo.
+- **Qué medir:** propongo **comparaciones** (o pasos) en lugar de milisegundos. Salen idénticas en
+  cada ejecución, no dependen de la computadora y muestran la complejidad sin ruido; con tiempos, las
+  listas pequeñas dan casi 0 ms y las curvas salen irregulares (fue el problema del benchmark).
+  Opcional: un selector "Comparaciones / Tiempo (ms)" para tener ambas, como en la práctica.
+- Sin librerías: SVG hecho a mano, como la gráfica de la ficha.
+- Costo: medio. Es la opción que mejor demuestra la complejidad.
+
+**B. Barra "trabajo vs. esperado" en cada panel (sencilla).** Una barra delgada bajo los contadores
+que se llena según `comparaciones / f(n)`. Mientras se anima se ve cómo Bubble llena su barra hacia n²
+y Merge apenas avanza hacia n log n. Costo: bajo.
+
+**C. Gráfica de barras en el resumen (sencilla).** Al terminar, barras horizontales con las
+comparaciones de cada algoritmo, con marcas verticales en n log n y n². Se ve de un vistazo quién
+hizo más trabajo y en qué zona cae. Costo: bajo.
+
+**Recomendación:** A (con comparaciones y selector opcional de tiempo) + B.
+
+**Decisión (25/09/2026):** se implementó A con comparaciones y tiempo (ver B15).
+
+---
+
 ## Propuestas pendientes de decidir (25/09/2026)
 
 Cambios que no se hicieron, para platicarlos. Ninguno es obligatorio para la actividad.
@@ -15,9 +76,7 @@ Cambios que no se hicieron, para platicarlos. Ninguno es obligatorio para la act
    una constante (`VELOCIDAD_MAX`); el deslizador logarítmico lo absorbe.
 2. **Botón "Ir al final".** Ejecuta lo que falta sin animar y muestra el resultado y el resumen al
    instante. Útil para comparar con listas grandes sin esperar. Es poco código: `avanzar(Infinity)`.
-3. **Tiempo de ejecución en el resumen.** La actividad menciona "tiempo de ejecución" como posible
-   indicador. Sin el benchmark, se podría medir cuánto tarda cada algoritmo en ordenar la lista actual
-   sin animar y mostrarlo como otra columna del resumen.
+3. ~~Tiempo de ejecución en el resumen.~~ Resuelto por la ventana Crecimiento (B15), que mide tiempo.
 
 ---
 
