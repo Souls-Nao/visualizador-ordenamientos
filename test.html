@@ -18,7 +18,7 @@
 </head>
 <body>
 <main>
-  <h1>Pruebas del proyecto (Bloques 03 a 11)</h1>
+  <h1>Pruebas del proyecto (Bloques 03 a 09 y complejidad)</h1>
   <p>
     Cada algoritmo del registro se ejecuta con varias listas. Los eventos se aplican sobre una copia
     (un "espejo") y el resultado se compara con <code>Array.prototype.sort</code>. Los conteos se
@@ -42,9 +42,7 @@
   import { crearContadores, registrarEvento, contarEjecucion, describirEvento } from './js/core/metricas.js';
   import { crearPanelAlgoritmo } from './js/ui/panelAlgoritmo.js';
   import { crearEscena } from './js/ui/escena.js';
-  import { FIELES } from './js/benchmark/fieles.js';
-  import { validarConfig } from './js/benchmark/benchmark.js';
-  import { resultadosACSV } from './js/benchmark/csv.js';
+  import { CLASES, estimarOperaciones, crearGraficaComplejidad } from './js/ui/complejidad.js';
   import { generarDatos, PATRONES } from './js/core/datos.js';
 
   /*
@@ -252,7 +250,7 @@
   {
     const P = 'Panel de código';
     const caja = document.createElement('div');
-    caja.style.cssText = 'position: relative; height: 90px; overflow: auto;';
+    caja.style.cssText = 'position: relative; width: 500px; height: 90px; overflow: auto; white-space: pre;';
     document.body.append(caja);
     const panel = crearPanelCodigo(caja);
     const activas = () => [...caja.querySelectorAll('.codigo__linea--activa')];
@@ -357,11 +355,9 @@
     caja.remove();
 
     const html = new DOMParser().parseFromString(await (await fetch('index.html')).text(), 'text/html');
-    const valores = (sel) => [...html.querySelectorAll(`${sel} option`)].map((o) => o.value).join();
-    const esperado = Object.values(PATRONES).join();
-    reportar(V, 'Las opciones de #sel-patron y #bench-patron coinciden con PATRONES',
-             valores('#sel-patron') === esperado && valores('#bench-patron') === esperado,
-             `${valores('#sel-patron')} / ${valores('#bench-patron')}`);
+    reportar(V, 'index.html ya no tiene benchmark ni selector de patrón, y el tamaño es un campo numérico',
+      !html.querySelector('#vista-benchmark, [data-vista=benchmark], #sel-patron') &&
+      html.getElementById('inp-tamano')?.type === 'number');
   }
 
   // ── Bloque 09: comparación ──
@@ -398,57 +394,26 @@
     caja.remove();
   }
 
-  // ── Bloque 10: benchmark ──
+  // ── Complejidad visual (requisito 8) ──
   {
-    const B = 'Benchmark';
-    const malos = Object.entries(FIELES).filter(([id, ordenar]) => casos(id).some(([, lista]) => {
-      const original = [...lista];
-      const salida = ordenar(lista);
-      return !iguales(salida, ordenar(original)) || !iguales(salida, [...original].sort((a, b) => a - b))
-          || !iguales(lista, original);
-    })).map(([id]) => id);
-    reportar(B, 'Las 8 versiones fieles ordenan las 27 listas sin modificar la entrada',
-             malos.length === 0 && Object.keys(FIELES).join() === Object.keys(ALGORITMOS).join(), malos.join(', '));
+    const X = 'Complejidad';
+    const sinClase = Object.entries(ALGORITMOS)
+      .filter(([, a]) => !CLASES[a.mejor] || !CLASES[a.promedio] || !CLASES[a.peor]).map(([id]) => id);
+    reportar(X, 'Todas las notaciones del registro tienen clase, color y fórmula', sinClase.length === 0, sinClase.join());
 
-    const base = { inicio: '100', incremento: '100', fin: '500', repeticiones: '3', patron: 'aleatoria' };
-    const casosValidacion = [
-      [base, true],
-      [{ ...base, inicio: '1.5' }, false],
-      [{ ...base, incremento: '0' }, false],
-      [{ ...base, inicio: '600' }, false],
-      [{ ...base, repeticiones: '0' }, false],
-      [{ ...base, incremento: '1', fin: '1000' }, false],
-      [{ ...base, patron: 'otro' }, false],
-    ];
-    const fallanValidacion = casosValidacion.filter(([d, ok]) => validarConfig(d).ok !== ok);
-    reportar(B, 'validarConfig aplica las reglas de main.py (enteros, incremento > 0, inicio ≤ fin) y los límites',
-             fallanValidacion.length === 0, fallanValidacion.map(([d]) => JSON.stringify(d)).join(' '));
+    const ok = estimarOperaciones('bubble', 30) === 900 && estimarOperaciones('merge', 32) === 160 &&
+               estimarOperaciones('stooge', 10) === Math.round(10 ** 2.71);
+    reportar(X, 'estimarOperaciones: n² con 30 = 900, n log n con 32 = 160, n^2.71 con 10', ok);
 
-    const resultados = await new Promise((resolver) => {
-      const worker = new Worker('./js/benchmark/worker.js', { type: 'module' });
-      let progresos = 0;
-      worker.onmessage = ({ data }) => {
-        if (data.tipo === 'progreso') progresos++;
-        else { worker.terminate(); resolver({ ...data, progresos }); }
-      };
-      worker.onerror = (e) => { worker.terminate(); resolver({ tipo: 'error', mensaje: e.message }); };
-      worker.postMessage({ tipo: 'iniciar', config: { inicio: 20, incremento: 20, fin: 60, repeticiones: 2, patron: 'aleatoria' } });
-      setTimeout(() => resolver({ tipo: 'error', mensaje: 'sin respuesta en 20 s' }), 20000);
-    });
-    const r = resultados.resultados;
-    reportar(B, 'El Worker mide 3 tamaños × 8 algoritmos, informa progreso y devuelve tiempos ≥ 0',
-      resultados.tipo === 'fin' && resultados.progresos === 24 && r.tamanos.join() === '20,40,60' &&
-      Object.values(r.tiempos).every((t) => t.length === 3 && t.every((ms) => ms >= 0)),
-      resultados.mensaje ?? JSON.stringify(r?.tamanos));
-  }
-
-  // ── Bloque 11: CSV ──
-  {
-    const csv = resultadosACSV({ tamanos: [10, 20], patron: 'aleatoria',
-      tiempos: { bubble: [0.5, 1.25], stooge: [3, null] } });
-    reportar('Benchmark', 'El CSV tiene encabezado, una fila por tamaño y deja vacío el tiempo omitido',
-      csv === ['n,Bubble Sort (ms),Stooge Sort (ms)', '10,0.5000,3.0000', '20,1.2500,'].join('\r\n'),
-      JSON.stringify(csv));
+    const svgMerge = crearGraficaComplejidad('merge', 50);
+    const svgStooge = crearGraficaComplejidad('stooge', 20);
+    const svgQuick = crearGraficaComplejidad('quick', 40);
+    reportar(X, 'La gráfica resalta el caso promedio, marca el peor si es distinto y agrega n^2.71 solo para Stooge',
+      svgMerge.querySelectorAll('polyline').length === 3 &&
+      svgMerge.querySelectorAll('.grafica-complejidad__curva--principal').length === 1 &&
+      svgMerge.querySelectorAll('.grafica-complejidad__curva--peor').length === 0 &&
+      svgQuick.querySelectorAll('.grafica-complejidad__curva--peor').length === 1 &&
+      svgStooge.querySelectorAll('polyline').length === 4);
   }
 
   const resumen = document.getElementById('resumen');

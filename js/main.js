@@ -13,11 +13,8 @@ import { crearPanelCodigo } from './ui/panelCodigo.js';
 import { crearEscena } from './ui/escena.js';
 import { iniciarControles } from './ui/controles.js';
 import { pintarFicha, pintarLeyenda, pintarResumen, pintarTablaAlgoritmos } from './ui/ficha.js';
-import { iniciarAtajos } from './ui/atajos.js';
 import { ESTADOS_REPRODUCTOR } from './motor/reproductor.js';
-import { iniciarBenchmark } from './benchmark/benchmark.js';
-import { dibujarGraficas, pintarTablaBench, limpiarResultados } from './benchmark/graficas.js';
-import { descargarCSV } from './benchmark/csv.js';
+import { iniciarAtajos } from './ui/atajos.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -41,36 +38,16 @@ const escena = crearEscena({
     controles?.actualizarBotones();
   },
   alTerminarTodos: (resumen) => {
-    pintarResumen($('tabla-resumen'), resumen);
+    pintarResumen($('tabla-resumen'), resumen, escena.estado.listaBase.length);
     $('zona-resumen').classList.remove('oculto');
   },
   alCambiarActivo: (id) => {
-    if (id) pintarFicha($('zona-ficha'), id);
+    if (id) pintarFicha($('zona-ficha'), id, escena.estado.listaBase.length);
     else $('zona-ficha').replaceChildren();
   },
 });
 pintarLeyenda($('zona-leyenda'));
 controles = iniciarControles(escena);
-
-// Bloque 10 — Benchmark (medición en Web Worker).
-// Bloque 11 — Gráficas, tabla y exportación a CSV de los resultados.
-let ultimosResultados = null;
-iniciarBenchmark({
-  alIniciar: () => {
-    ultimosResultados = null;
-    $('btn-bench-csv').disabled = true;
-    limpiarResultados($('zona-graficas'), $('tabla-bench'));
-  },
-  alTerminar: (resultados) => {
-    ultimosResultados = resultados;
-    dibujarGraficas($('zona-graficas'), resultados);
-    pintarTablaBench($('tabla-bench'), resultados);
-    $('btn-bench-csv').disabled = false;
-  },
-});
-$('btn-bench-csv').addEventListener('click', () => {
-  if (ultimosResultados) descargarCSV(ultimosResultados);
-});
 
 // Bloque 12 — Atajos de teclado y pestaña Algoritmos.
 iniciarAtajos();

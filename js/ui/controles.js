@@ -5,10 +5,12 @@
  *
  * Conecta los elementos de index.html (IDs de BLOQUES.md 3.3) con la escena.
  * Todos / Ninguno marcan o desmarcan todas las casillas (Bloque 09).
- * La selección, el tamaño, el patrón y la velocidad se recuerdan entre
- * visitas (Bloque 12, preferencias.js).
- * Aquí se validan los límites de la interfaz: tamaño de 5 a 120 y Stooge
- * Sort limitado a LIMITE_STOOGE_VISUAL elementos.
+ * La selección, el tamaño y la velocidad se recuerdan entre visitas
+ * (Bloque 12, preferencias.js).
+ *
+ * El tamaño de la lista es libre (entero entre TAMANO_MIN y TAMANO_MAX) y
+ * los datos siempre son aleatorios. Con Stooge Sort y listas grandes solo
+ * se avisa que tardará mucho.
  */
 import { ALGORITMOS } from '../algoritmos/index.js';
 import { PATRONES } from '../core/datos.js';
@@ -28,8 +30,6 @@ const SELECCION_INICIAL = ['bubble'];
 export function iniciarControles(escena) {
   const $ = (id) => document.getElementById(id);
   const inpTamano = $('inp-tamano');
-  const lblTamano = $('lbl-tamano');
-  const selPatron = $('sel-patron');
   const inpVelocidad = $('inp-velocidad');
   const lblVelocidad = $('lbl-velocidad');
   const lblAviso = $('lbl-aviso');
@@ -61,32 +61,47 @@ export function iniciarControles(escena) {
   const seleccionados = () =>
     casillas.map((e) => e.firstChild).filter((c) => c.checked).map((c) => c.value);
 
-  // ── Tamaño de la lista ──
-  function mostrarAviso(texto) {
+  // ── Tamaño de la lista y velocidad en uso ──
+  let tamanoActual = TAMANO_DEFECTO;
+  let velocidadActual = Number(prefs.velocidad) || VELOCIDAD_DEFECTO;
+
+  function mostrarAviso(texto, esError = false) {
     lblAviso.textContent = texto ?? '';
     lblAviso.classList.toggle('oculto', !texto);
+    lblAviso.classList.toggle('aviso--error', esError);
+  }
+
+  /** Aviso informativo si Stooge está marcado con una lista grande. */
+  function revisarStooge() {
+    const lento = seleccionados().includes('stooge') && tamanoActual > LIMITE_STOOGE_VISUAL;
+    mostrarAviso(lento
+      ? `Stooge Sort crece como n^2.71: con ${tamanoActual} elementos hará cerca de ` +
+        `${Math.round(tamanoActual ** 2.71).toLocaleString('es-MX')} pasos y puede tardar mucho. ` +
+        'Sube la velocidad o usa una lista más pequeña.'
+      : null);
   }
 
   /**
-   * Ajusta el tamaño pedido a los límites y devuelve el que se usará.
-   * Mientras Stooge Sort esté seleccionado, el máximo del deslizador baja a
-   * LIMITE_STOOGE_VISUAL y se muestra el motivo.
+   * Lee el tamaño escrito. Si no es válido, muestra el motivo, restaura el
+   * anterior y devuelve null.
    */
-  function tamanoPermitido() {
-    const conStooge = seleccionados().includes('stooge');
-    const maximo = conStooge ? LIMITE_STOOGE_VISUAL : TAMANO_MAX;
-    const n = Math.min(maximo, Math.max(TAMANO_MIN, Number(inpTamano.value)));
-    inpTamano.max = maximo;
-    inpTamano.value = n;
-    lblTamano.textContent = n;
-    mostrarAviso(conStooge
-      ? `Stooge Sort crece muy rápido (n^2.71): mientras esté seleccionado, la lista se limita a ${LIMITE_STOOGE_VISUAL} elementos.`
-      : null);
+  function leerTamano() {
+    const n = Number(inpTamano.value);
+    if (!Number.isInteger(n) || n < TAMANO_MIN || n > TAMANO_MAX) {
+      mostrarAviso(`El tamaño debe ser un número entero entre ${TAMANO_MIN} y ` +
+        `${TAMANO_MAX.toLocaleString('es-MX')}.`, true);
+      inpTamano.value = tamanoActual;
+      return null;
+    }
     return n;
   }
 
   function nuevaLista() {
-    escena.nuevaLista(tamanoPermitido(), selPatron.value);
+    const n = leerTamano();
+    if (n === null) return;
+    tamanoActual = n;
+    escena.nuevaLista(n, PATRONES.ALEATORIA);
+    revisarStooge();
     actualizarBotones();
     guardar();
   }
@@ -94,9 +109,8 @@ export function iniciarControles(escena) {
   function guardar() {
     guardarPreferencias({
       seleccionados: seleccionados(),
-      tamano: Number(inpTamano.value),
-      patron: selPatron.value,
-      velocidad: velocidadDesdeSlider(Number(inpVelocidad.value)),
+      tamano: tamanoActual,
+      velocidad: velocidadActual,
     });
   }
 
@@ -112,13 +126,10 @@ export function iniciarControles(escena) {
   }
 
   // ── Eventos ──
-  /** Aplica la selección actual de casillas a la escena. */
+  /** Aplica la selección actual de casillas a la escena (misma lista). */
   function aplicarSeleccion() {
-    const antes = Number(inpTamano.value);
-    const n = tamanoPermitido();
     escena.setSeleccion(seleccionados());
-    // Si Stooge obligó a reducir el tamaño, hace falta una lista nueva.
-    if (n !== antes) escena.nuevaLista(n, selPatron.value);
+    revisarStooge();
     actualizarBotones();
     guardar();
   }
@@ -132,15 +143,14 @@ export function iniciarControles(escena) {
   $('btn-todos').addEventListener('click', () => marcarTodas(true));
   $('btn-ninguno').addEventListener('click', () => marcarTodas(false));
 
-  inpTamano.addEventListener('input', () => { lblTamano.textContent = inpTamano.value; });
+  // `change` se dispara al pulsar Enter o al salir del campo.
   inpTamano.addEventListener('change', nuevaLista);
-  selPatron.addEventListener('change', nuevaLista);
   $('btn-nueva-lista').addEventListener('click', nuevaLista);
 
   inpVelocidad.addEventListener('input', () => {
-    const pps = velocidadDesdeSlider(Number(inpVelocidad.value));
-    escena.setVelocidad(pps);
-    lblVelocidad.textContent = pps;
+    velocidadActual = velocidadDesdeSlider(Number(inpVelocidad.value));
+    escena.setVelocidad(velocidadActual);
+    lblVelocidad.textContent = velocidadActual;
   });
   inpVelocidad.addEventListener('change', guardar);
 
@@ -154,14 +164,13 @@ export function iniciarControles(escena) {
 
   // ── Estado inicial ──
   inpTamano.min = TAMANO_MIN;
+  inpTamano.max = TAMANO_MAX;
   inpTamano.value = Number.isInteger(prefs.tamano) ? prefs.tamano : TAMANO_DEFECTO;
-  if (Object.values(PATRONES).includes(prefs.patron)) selPatron.value = prefs.patron;
   // La velocidad inicial se usa tal cual; el deslizador solo se acerca a
   // ella (ida y vuelta por la escala logarítmica, 20 daría 19).
-  const velocidad = Number(prefs.velocidad) || VELOCIDAD_DEFECTO;
-  inpVelocidad.value = sliderDesdeVelocidad(velocidad);
-  lblVelocidad.textContent = velocidad;
-  escena.setVelocidad(velocidad);
+  inpVelocidad.value = sliderDesdeVelocidad(velocidadActual);
+  lblVelocidad.textContent = velocidadActual;
+  escena.setVelocidad(velocidadActual);
   escena.setSeleccion(seleccionados());
   nuevaLista();
 

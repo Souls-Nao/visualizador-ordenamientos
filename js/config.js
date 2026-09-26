@@ -16,26 +16,20 @@
  */
 
 /**
- * Tamaño de la lista en el visualizador (sección 5.4 de la planeación).
- * El benchmark no usa estos límites: puede generar listas mucho mayores.
+ * Tamaño de la lista. El usuario escribe el que quiera; TAMANO_MAX es solo
+ * un tope técnico: con más elementos que píxeles las barras se enciman y la
+ * animación de un algoritmo O(n²) duraría horas.
  */
-export const TAMANO_MIN = 5;
-export const TAMANO_MAX = 120;
+export const TAMANO_MIN = 2;
+export const TAMANO_MAX = 10000;
 export const TAMANO_DEFECTO = 30;
 
 /**
- * Tamaño máximo con el que se permite animar Stooge Sort. Su cantidad de
- * pasos crece como n^2.7, así que con listas grandes la animación no
- * terminaría en un tiempo razonable.
+ * A partir de este tamaño se avisa que Stooge Sort tardará mucho: su
+ * cantidad de pasos crece como n^2.71 (con 30 elementos ya son ~10 000).
+ * Es solo un aviso; no limita el tamaño.
  */
 export const LIMITE_STOOGE_VISUAL = 30;
-
-/**
- * Tamaño máximo con el que Stooge Sort entra al benchmark. Por encima de
- * este valor se omite y se avisa al usuario, para que la medición no tarde
- * minutos.
- */
-export const LIMITE_STOOGE_BENCH = 500;
 
 /**
  * Velocidad de la animación, en pasos (eventos) por segundo.

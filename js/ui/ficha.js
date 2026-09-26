@@ -8,15 +8,23 @@
  * La leyenda se genera desde COLORES (B04), la misma fuente que usa el canvas.
  * El resumen de la comparación (Bloque 09) se pinta con pintarResumen.
  * La tabla de la pestaña Algoritmos (Bloque 12) sale del mismo registro.
+ * La complejidad se muestra con su color y con una gráfica de crecimiento
+ * (complejidad.js).
  */
 import { ALGORITMOS } from '../algoritmos/index.js';
 import { COLORES, NOMBRES_ESTADO } from '../render/canvasBarras.js';
+import {
+  CLASES, claseDe, crearEtiquetaComplejidad, crearGraficaComplejidad, estimarOperaciones,
+} from './complejidad.js';
+
+const formato = (v) => v.toLocaleString('es-MX');
 
 /**
  * @param {HTMLElement} contenedor
  * @param {string} id
+ * @param {number} n  Tamaño de la lista actual, para la gráfica de complejidad.
  */
-export function pintarFicha(contenedor, id) {
+export function pintarFicha(contenedor, id, n) {
   const a = ALGORITMOS[id];
   const filas = [
     ['Mejor caso', a.mejor],
@@ -37,13 +45,26 @@ export function pintarFicha(contenedor, id) {
     th.scope = 'row';
     th.textContent = etiqueta;
     fila.append(th);
-    fila.insertCell().textContent = valor;
+    const celda = fila.insertCell();
+    if (CLASES[valor]) celda.append(crearEtiquetaComplejidad(valor));
+    else celda.textContent = valor;
   }
 
   const descripcion = document.createElement('p');
   descripcion.textContent = a.descripcion;
 
-  contenedor.replaceChildren(titulo, tabla, descripcion);
+  // ¿Cómo crece? Gráfica de 1 a n con la complejidad del algoritmo resaltada.
+  const subtitulo = document.createElement('h4');
+  subtitulo.textContent = '¿Cómo crece el trabajo?';
+  const explicacion = document.createElement('p');
+  explicacion.className = 'ficha__nota';
+  const clase = claseDe(a.promedio);
+  explicacion.textContent =
+    `Con tu lista (n = ${n}), ${clase.etiqueta} ≈ ${formato(estimarOperaciones(id, n))} operaciones. ` +
+    'La línea gruesa es el caso promedio' + (a.peor !== a.promedio ? ' y la punteada, el peor caso.' : '.');
+
+  contenedor.replaceChildren(titulo, tabla, descripcion, subtitulo,
+    crearGraficaComplejidad(id, n), explicacion);
 }
 
 /** @param {HTMLElement} contenedor */
@@ -65,6 +86,7 @@ const COLUMNAS_RESUMEN = [
   ['Llegada', 'llegada'],
   ['Algoritmo', 'nombre'],
   ['Complejidad promedio', 'complejidad'],
+  ['Esperado para n', 'esperado'],
   ['Comparaciones', 'comparaciones'],
   ['Intercambios', 'intercambios'],
   ['Escrituras', 'escrituras'],
@@ -74,10 +96,14 @@ const COLUMNAS_RESUMEN = [
 /**
  * Tabla con los contadores de cada algoritmo, en orden de llegada.
  *
+ * "Esperado para n" es el valor de la fórmula de complejidad con el tamaño
+ * de la lista, para compararlo con las comparaciones reales.
+ *
  * @param {HTMLTableElement} tabla
  * @param {Object[]} resumen  Salida de escena.resumen (Bloque 09).
+ * @param {number} n          Tamaño de la lista.
  */
-export function pintarResumen(tabla, resumen) {
+export function pintarResumen(tabla, resumen, n) {
   tabla.replaceChildren();
   const encabezado = tabla.createTHead().insertRow();
   for (const [titulo] of COLUMNAS_RESUMEN) {
@@ -91,10 +117,13 @@ export function pintarResumen(tabla, resumen) {
   for (const fila of resumen) {
     const tr = cuerpo.insertRow();
     for (const [, campo] of COLUMNAS_RESUMEN) {
+      const celda = tr.insertCell();
       const valor = fila[campo];
-      tr.insertCell().textContent =
-        campo === 'llegada' ? `${valor}.º` :
-        typeof valor === 'number' ? valor.toLocaleString('es-MX') : valor;
+      if (campo === 'llegada') celda.textContent = `${valor}.º`;
+      else if (campo === 'complejidad') celda.append(crearEtiquetaComplejidad(valor));
+      else if (campo === 'esperado') {
+        celda.textContent = `${claseDe(fila.complejidad).etiqueta} ≈ ${formato(estimarOperaciones(fila.id, n))}`;
+      } else celda.textContent = typeof valor === 'number' ? formato(valor) : valor;
     }
   }
 }
@@ -119,8 +148,11 @@ export function pintarTablaAlgoritmos(tabla) {
   for (const a of Object.values(ALGORITMOS)) {
     const fila = cuerpo.insertRow();
     const tipo = a.categoria === 'fuerza-bruta' ? 'Fuerza bruta' : 'Divide y vencerás';
-    for (const valor of [a.nombre, tipo, a.mejor, a.promedio, a.peor, a.espacio, a.estable, a.descripcion]) {
-      fila.insertCell().textContent = valor;
+    fila.insertCell().textContent = a.nombre;
+    fila.insertCell().textContent = tipo;
+    for (const notacion of [a.mejor, a.promedio, a.peor]) {
+      fila.insertCell().append(crearEtiquetaComplejidad(notacion));
     }
+    for (const valor of [a.espacio, a.estable, a.descripcion]) fila.insertCell().textContent = valor;
   }
 }

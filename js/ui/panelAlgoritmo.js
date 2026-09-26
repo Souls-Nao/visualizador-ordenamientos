@@ -13,6 +13,7 @@ import { ALGORITMOS } from '../algoritmos/index.js';
 import { crearEspejo, aplicarEvento } from '../render/espejo.js';
 import { crearCanvasBarras } from '../render/canvasBarras.js';
 import { crearContadores, registrarEvento, describirEvento } from '../core/metricas.js';
+import { CLASES } from './complejidad.js';
 
 const MENSAJE_INICIAL = 'Listo para empezar.';
 
@@ -46,7 +47,10 @@ export function crearPanelAlgoritmo({ contenedor, id, lista, alSeleccionar = () 
     </dl>
     <p class="panel__mensaje" aria-live="off"></p>`;
   panel.querySelector('.panel__titulo').textContent = nombre;
-  panel.querySelector('.panel__complejidad').textContent = promedio;
+  const complejidad = panel.querySelector('.panel__complejidad');
+  complejidad.textContent = promedio;
+  complejidad.classList.add('complejidad');
+  complejidad.style.background = CLASES[promedio].color;
   contenedor.append(panel);
 
   const salidaContadores = [...panel.querySelectorAll('[data-contador]')];

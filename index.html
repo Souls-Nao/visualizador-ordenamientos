@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/componentes.css">
-  <script src="vendor/chart.umd.min.js" defer></script>
   <script type="module" src="js/main.js"></script>
 </head>
 <body>
@@ -18,7 +17,6 @@
     <h1 class="encabezado__titulo">Visualizador de ordenamientos</h1>
     <nav id="nav-pestanas" class="pestanas" role="tablist" aria-label="Secciones">
       <button type="button" class="pestana" role="tab" data-vista="visualizador">Visualizador</button>
-      <button type="button" class="pestana" role="tab" data-vista="benchmark">Benchmark</button>
       <button type="button" class="pestana" role="tab" data-vista="algoritmos">Algoritmos</button>
       <button type="button" class="pestana" role="tab" data-vista="acerca">Acerca</button>
     </nav>
@@ -46,18 +44,10 @@
         <fieldset class="grupo">
           <legend>Datos</legend>
           <label class="campo">
-            <span>Tamaño: <output id="lbl-tamano" for="inp-tamano">30</output></span>
-            <input type="range" id="inp-tamano" min="5" max="120" value="30">
+            <span>Tamaño de la lista</span>
+            <input type="number" id="inp-tamano" min="2" step="1" value="30" inputmode="numeric">
           </label>
-          <label class="campo">
-            <span>Patrón</span>
-            <select id="sel-patron">
-              <option value="aleatoria">Aleatoria</option>
-              <option value="ordenada">Ordenada</option>
-              <option value="invertida">Invertida</option>
-              <option value="casi-ordenada">Casi ordenada</option>
-            </select>
-          </label>
+          <p class="atajos">Valores aleatorios. Escribe el tamaño y pulsa Enter o Nueva lista.</p>
           <button type="button" id="btn-nueva-lista" class="boton">Nueva lista</button>
         </fieldset>
 
@@ -110,57 +100,6 @@
       </div>
     </section>
 
-    <!-- ═══ Benchmark (boceto 8.3) ═══ -->
-    <section id="vista-benchmark" class="vista" aria-label="Benchmark">
-      <form id="form-bench" class="formulario" novalidate>
-        <label class="campo">
-          <span>Tamaño inicial</span>
-          <input type="number" id="bench-inicio" min="1" step="1" value="100" inputmode="numeric">
-        </label>
-        <label class="campo">
-          <span>Incremento</span>
-          <input type="number" id="bench-incremento" min="1" step="1" value="100" inputmode="numeric">
-        </label>
-        <label class="campo">
-          <span>Tamaño final</span>
-          <input type="number" id="bench-fin" min="1" step="1" value="500" inputmode="numeric">
-        </label>
-        <label class="campo">
-          <span>Repeticiones</span>
-          <input type="number" id="bench-repeticiones" min="1" max="20" step="1" value="3" inputmode="numeric">
-        </label>
-        <label class="campo">
-          <span>Tipo de datos</span>
-          <select id="bench-patron">
-            <option value="aleatoria">Aleatoria</option>
-            <option value="ordenada">Ordenada</option>
-            <option value="invertida">Invertida</option>
-            <option value="casi-ordenada">Casi ordenada</option>
-          </select>
-        </label>
-        <div class="formulario__acciones">
-          <button type="submit" id="btn-bench-ejecutar" class="boton boton--primario">Ejecutar</button>
-          <button type="button" id="btn-bench-cancelar" class="boton" disabled>Cancelar</button>
-          <button type="button" id="btn-bench-csv" class="boton" disabled>Exportar CSV</button>
-        </div>
-      </form>
-
-      <progress id="bench-progreso" class="progreso" max="1" value="0"></progress>
-      <p id="bench-mensaje" class="aviso oculto" role="status"></p>
-      <p class="aviso">
-        Se miden las funciones originales de la práctica (ordenamientos.py) traducidas a JavaScript.
-        Los tiempos son distintos a los de Python, pero la forma de las curvas y las proporciones
-        entre algoritmos se mantienen. Cada tiempo es la mediana de las repeticiones.
-      </p>
-
-      <div id="zona-graficas" class="graficas">
-        <p class="marcador">Ejecuta el benchmark para ver las cuatro gráficas de benchmark.py.</p>
-      </div>
-      <div class="tabla-contenedor">
-        <table id="tabla-bench" class="tabla"></table>
-      </div>
-    </section>
-
     <!-- ═══ Algoritmos ═══ -->
     <section id="vista-algoritmos" class="vista" aria-label="Algoritmos">
       <h2 class="subtitulo">Los ocho algoritmos</h2>
@@ -184,7 +123,7 @@
       <p><strong>Equipo Ultima Chance:</strong> Johan Daniel Gutierrez Nava.</p>
       <p>
         <strong>Tecnologías:</strong> HTML, CSS y JavaScript con módulos, sin frameworks; Canvas 2D
-        para las barras, Web Worker para el benchmark y Chart.js para las gráficas.
+        para las barras y SVG para la gráfica de complejidad.
       </p>
       <ul class="enlaces">
         <li><a id="enlace-repo" href="#" rel="noopener">Repositorio en GitHub</a></li>

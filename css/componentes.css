@@ -122,9 +122,60 @@ kbd {
   font-size: 1rem;
 }
 
-.panel__complejidad {
-  color: var(--texto-suave);
+/* ── Complejidad: el color de fondo lo pone JS desde CLASES (complejidad.js) ── */
+.complejidad {
+  display: inline-block;
+  padding: 0 var(--esp-2);
+  border-radius: 999px;
   font-family: var(--fuente-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: #fff;
+}
+
+.grafica-complejidad {
+  width: 100%;
+  height: auto;
+}
+
+.grafica-complejidad__eje {
+  stroke: var(--borde);
+  stroke-width: 1;
+}
+
+.grafica-complejidad__curva {
+  fill: none;
+  stroke-linejoin: round;
+}
+
+.grafica-complejidad__curva--fondo {
+  stroke-width: 1.5;
+  opacity: 0.45;
+}
+
+.grafica-complejidad__curva--principal {
+  stroke-width: 4;
+}
+
+.grafica-complejidad__curva--peor {
+  stroke-width: 3;
+  stroke-dasharray: 6 4;
+}
+
+.grafica-complejidad__texto {
+  fill: var(--texto-suave);
+  font-family: var(--fuente-mono);
+  font-size: 11px;
+}
+
+.grafica-complejidad__texto--fuerte {
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.ficha__nota {
+  color: var(--texto-suave);
   font-size: 0.8rem;
 }
 
