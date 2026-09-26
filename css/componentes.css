@@ -74,6 +74,104 @@ kbd {
   font-size: 0.75rem;
 }
 
+/* ── Ventana Crecimiento ── */
+.boton--acento {
+  border-color: var(--acento);
+  color: var(--acento);
+}
+
+.ventana {
+  width: min(960px, 96vw);
+  max-height: 92vh;
+  padding: var(--esp-4);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  color: var(--texto);
+}
+
+.ventana[open] {
+  display: grid;
+  gap: var(--esp-3);
+}
+
+.ventana::backdrop {
+  background: rgb(0 0 0 / 0.55);
+}
+
+.ventana__cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--esp-3);
+}
+
+.ventana__controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--esp-3);
+}
+
+.ventana__grafica {
+  display: grid;
+  gap: var(--esp-2);
+}
+
+.grafica-crecimiento {
+  width: 100%;
+  height: auto;
+}
+
+.grafica-crecimiento__rejilla {
+  stroke: var(--borde);
+  stroke-width: 1;
+}
+
+.grafica-crecimiento__eje {
+  stroke: var(--texto-suave);
+  stroke-width: 1;
+}
+
+.grafica-crecimiento__texto {
+  fill: var(--texto-suave);
+  font-family: var(--fuente-mono);
+  font-size: 11px;
+}
+
+.grafica-crecimiento__texto--teorica {
+  font-weight: 700;
+}
+
+.grafica-crecimiento__titulo {
+  fill: var(--texto-suave);
+  font-size: 12px;
+}
+
+.grafica-crecimiento__teorica {
+  fill: none;
+  stroke: var(--texto-suave);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 5;
+  opacity: 0.6;
+}
+
+.grafica-crecimiento__serie {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.leyenda--plana {
+  border: 0;
+  padding: 0;
+}
+
+.leyenda__nota {
+  color: var(--texto-suave);
+  font-style: italic;
+}
+
 /* ── Avisos ── */
 .aviso {
   padding: var(--esp-2) var(--esp-3);

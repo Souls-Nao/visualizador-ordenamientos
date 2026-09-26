@@ -15,6 +15,7 @@ import { iniciarControles } from './ui/controles.js';
 import { pintarFicha, pintarLeyenda, pintarResumen, pintarTablaAlgoritmos } from './ui/ficha.js';
 import { ESTADOS_REPRODUCTOR } from './motor/reproductor.js';
 import { iniciarAtajos } from './ui/atajos.js';
+import { iniciarVentanaCrecimiento } from './ui/ventanaCrecimiento.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -52,3 +53,6 @@ controles = iniciarControles(escena);
 // Bloque 12 — Atajos de teclado y pestaña Algoritmos.
 iniciarAtajos();
 pintarTablaAlgoritmos($('tabla-algoritmos'));
+
+// Complejidad (requisito 8): ventana con la gráfica de crecimiento.
+iniciarVentanaCrecimiento(escena);

@@ -37,6 +37,7 @@
           <div class="grupo__acciones">
             <button type="button" id="btn-todos" class="boton boton--chico">Todos</button>
             <button type="button" id="btn-ninguno" class="boton boton--chico">Ninguno</button>
+            <button type="button" id="btn-crecimiento" class="boton boton--chico boton--acento">Ver crecimiento</button>
           </div>
         </fieldset>
 
@@ -132,6 +133,33 @@
     </section>
 
   </main>
+
+  <!-- ═══ Ventana Crecimiento (requisito 8): la gráfica de benchmark.py ═══ -->
+  <dialog id="dlg-crecimiento" class="ventana" aria-labelledby="titulo-crecimiento">
+    <header class="ventana__cabecera">
+      <h2 id="titulo-crecimiento" class="subtitulo">Crecimiento: trabajo según el tamaño de la lista</h2>
+      <button type="button" id="btn-cerrar-crecimiento" class="boton boton--chico" aria-label="Cerrar">Cerrar</button>
+    </header>
+    <form id="form-crecimiento" class="ventana__controles">
+      <label class="campo">
+        <span>Medir</span>
+        <select id="sel-medida">
+          <option value="comparaciones">Comparaciones</option>
+          <option value="tiempo">Tiempo (ms)</option>
+        </select>
+      </label>
+      <label class="campo">
+        <span>Hasta n =</span>
+        <input type="number" id="inp-crecimiento-n" step="1" inputmode="numeric">
+      </label>
+      <button type="submit" id="btn-calcular-crecimiento" class="boton boton--primario">Calcular</button>
+    </form>
+    <p id="lbl-crecimiento" class="aviso" role="status"></p>
+    <div id="zona-grafica-crecimiento" class="ventana__grafica"></div>
+    <div class="tabla-contenedor">
+      <table id="tabla-crecimiento" class="tabla"></table>
+    </div>
+  </dialog>
 
   <footer class="pie">
     Ultima Chance · 2026

@@ -43,6 +43,8 @@
   import { crearPanelAlgoritmo } from './js/ui/panelAlgoritmo.js';
   import { crearEscena } from './js/ui/escena.js';
   import { CLASES, estimarOperaciones, crearGraficaComplejidad } from './js/ui/complejidad.js';
+  import { tamanosHasta, medirComparaciones, calcularCrecimiento, MEDIDAS } from './js/core/crecimiento.js';
+  import { crearGraficaCrecimiento } from './js/ui/ventanaCrecimiento.js';
   import { generarDatos, PATRONES } from './js/core/datos.js';
 
   /*
@@ -414,6 +416,29 @@
       svgMerge.querySelectorAll('.grafica-complejidad__curva--peor').length === 0 &&
       svgQuick.querySelectorAll('.grafica-complejidad__curva--peor').length === 1 &&
       svgStooge.querySelectorAll('polyline').length === 4);
+  }
+
+  // ── Ventana Crecimiento (requisito 8) ──
+  {
+    const G = 'Crecimiento';
+    reportar(G, 'tamanosHasta(100) da 10 tamaños de 10 en 10 y medirComparaciones coincide con B07',
+      tamanosHasta(100).join() === '10,20,30,40,50,60,70,80,90,100' &&
+      medirComparaciones('bubble', [5, 4, 3, 2, 1]) === 10);
+
+    const r = await calcularCrecimiento({ ids: ['bubble', 'merge', 'stooge'], nMax: 300, medida: MEDIDAS.COMPARACIONES });
+    const stooge = r.series.stooge;
+    reportar(G, 'Mide cada algoritmo en cada tamaño, crece con n y omite Stooge con n > 200',
+      r.tamanos.length === 10 && r.series.bubble.every((v, k) => k === 0 || v > r.series.bubble[k - 1]) &&
+      stooge.slice(0, 6).every((v) => v > 0) && stooge.slice(7).every((v) => v === null) &&
+      r.omitidos.join() === 'stooge' && r.series.merge.at(-1) < r.series.bubble.at(-1),
+      JSON.stringify(stooge));
+
+    const svg = crearGraficaCrecimiento(r);
+    const svgTiempo = crearGraficaCrecimiento({ ...r, medida: MEDIDAS.TIEMPO });
+    reportar(G, 'La gráfica tiene una línea por algoritmo y curvas teóricas solo al medir comparaciones',
+      svg.querySelectorAll('.grafica-crecimiento__serie').length === 3 &&
+      svg.querySelectorAll('.grafica-crecimiento__teorica').length === 3 &&
+      svgTiempo.querySelectorAll('.grafica-crecimiento__teorica').length === 0);
   }
 
   const resumen = document.getElementById('resumen');
