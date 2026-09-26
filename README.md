@@ -31,7 +31,7 @@ cambia el arreglo hasta quedar ordenado.
 | 5. Reiniciar | **Reiniciar** vuelve al inicio con **la misma lista**. |
 | 6. Cambiar la velocidad | Deslizador de 1 a 2000 pasos por segundo. |
 | 7. Nombre del algoritmo | En el título de cada panel, en el panel de código y en la ficha. |
-| 8. Complejidad temporal | Etiqueta de color por clase, ficha con mejor/promedio/peor caso, gráfica **"¿Cómo crece el trabajo?"** y ventana **Ver crecimiento**. |
+| 8. Complejidad temporal | Etiqueta de color por clase, ficha con mejor/promedio/peor caso, gráfica **"¿Cómo crece el trabajo?"** y el apartado **Complejidad en acción**. |
 | 9. Mismos datos para comparar | Todos los paneles usan la misma lista y avanzan a la misma velocidad. |
 
 Además:
@@ -39,9 +39,12 @@ Además:
 - **Contadores en vivo** (comparaciones, movimientos y pasos) y un mensaje con la operación actual.
 - **Tabla resumen** al terminar: orden de llegada, comparaciones, intercambios, escrituras, pasos y
   el valor esperado según la complejidad (por ejemplo, n² ≈ 900 con 30 elementos).
-- Ventana **Ver crecimiento**: la gráfica de la práctica en Python dentro de la página. Mide cada
-  algoritmo seleccionado con 10 tamaños (una misma lista aleatoria por tamaño) y dibuja comparaciones
-  o tiempo (ms) contra n, con las curvas n log n y n² de referencia, más la tabla de datos.
+- Apartado **Complejidad en acción**, debajo del código:
+  - *Comparaciones durante la animación*: una línea por algoritmo que avanza al ritmo de las barras,
+    con lo esperado para n (n log n, n²) como referencia.
+  - *Crecimiento según el tamaño*: al terminar, la gráfica de la práctica en Python con el **mismo
+    arreglo** (sus primeros n/10, 2n/10, …, n elementos), en comparaciones o en tiempo (ms), con las
+    curvas teóricas de fondo y los datos en un desplegable.
 - Pestaña **Algoritmos** con la tabla comparativa de los ocho, atajos de teclado (Espacio, →, R, N),
   preferencias guardadas en el navegador y diseño adaptable a celular.
 
@@ -49,9 +52,7 @@ Además:
 |---|---|
 | ![Visualizador](docs/capturas/visualizador.png) | ![Resumen](docs/capturas/comparacion-resumen.png) |
 
-| Ventana Crecimiento: comparaciones | Ventana Crecimiento: tiempo |
-|---|---|
-| ![Crecimiento por comparaciones](docs/capturas/crecimiento.png) | ![Crecimiento por tiempo](docs/capturas/crecimiento-tiempo.png) |
+![Complejidad en acción](docs/capturas/complejidad-final.png)
 
 ![Pestaña Algoritmos](docs/capturas/algoritmos.png)
 
@@ -71,7 +72,7 @@ Después abrir http://localhost:8000 en el navegador. También sirve la extensi�
 VS Code.
 
 **Pruebas:** con el servidor encendido, abrir http://localhost:8000/test.html. Debe mostrar
-"78 de 78 pruebas pasaron".
+"80 de 80 pruebas pasaron".
 
 **Publicación:** GitHub Pages publica la rama `main` desde la raíz. Cada `push` a `main` actualiza
 el sitio en uno o dos minutos.
@@ -124,8 +125,9 @@ generador del algoritmo ──yield──► evento { type, indices, line }
    misma lista base, y registra el orden de llegada.
 5. **La complejidad** (`js/ui/complejidad.js`) da el color de cada clase, dibuja la gráfica teórica
    en SVG y calcula el valor esperado para n.
-6. **La ventana Crecimiento** (`js/core/crecimiento.js` + `js/ui/ventanaCrecimiento.js`) ejecuta los
-   algoritmos sin animar para varios tamaños y dibuja los resultados.
+6. **Complejidad en acción**: `js/ui/graficaVivo.js` recibe los contadores en cada cuadro; al terminar,
+   `js/core/crecimiento.js` ejecuta los algoritmos sin animar con prefijos del mismo arreglo y
+   `js/ui/graficaCrecimiento.js` dibuja el resultado.
 
 **Dónde se calcula cada métrica**
 - Comparaciones, intercambios, escrituras, movimientos y pasos: `registrarEvento` en
@@ -147,7 +149,7 @@ js/algoritmos/  un archivo por algoritmo · index.js (registro) · fuentesPython
 js/render/      espejo.js · canvasBarras.js
 js/motor/       reproductor.js
 js/ui/          escena.js · panelAlgoritmo.js · panelCodigo.js · controles.js · ficha.js · complejidad.js ·
-                ventanaCrecimiento.js · …
+                graficaVivo.js · graficaCrecimiento.js · …
 docs/           eventos.md · capturas/ · referencia/ (práctica en Python y conteos.py)
 ```
 
@@ -163,12 +165,12 @@ docs/           eventos.md · capturas/ · referencia/ (práctica en Python y co
 
 ## Pruebas
 
-`test.html` reúne 78 pruebas que se ejecutan en el navegador, entre ellas:
+`test.html` reúne 80 pruebas que se ejecutan en el navegador, entre ellas:
 - los 8 algoritmos ordenan 27 listas (casos borde y distintos patrones) sin modificar la entrada;
 - hacen **las mismas comparaciones y escrituras** que el código Python mostrado en pantalla;
 - cada línea resaltada corresponde a la operación que se anima;
 - espejo, reproductor (con reloj simulado), panel de código, métricas, paneles, comparación y
-  complejidad y ventana Crecimiento.
+  complejidad y las gráficas de Complejidad en acción.
 
 **Limitaciones conocidas**
 - Con listas muy grandes (más barras que píxeles) las barras se enciman, y los algoritmos O(n²)
@@ -177,8 +179,9 @@ docs/           eventos.md · capturas/ · referencia/ (práctica en Python y co
 - Stooge Sort crece como n^2.71; con más de 30 elementos la página avisa cuántos pasos hará.
 - En Merge Sort, al comparar se resalta la posición de donde salió el valor izquierdo; esa barra puede
   ya estar sobrescrita, porque el valor real está en la copia `izquierda`.
-- En la ventana Crecimiento, el tiempo varía un poco entre ejecuciones; con listas pequeñas (menos de
-  unos cientos de elementos) domina el costo fijo de cada ejecución. Stooge se omite con n > 200.
+- En Crecimiento, el tiempo varía un poco entre ejecuciones y con menos de 500 elementos domina el
+  costo fijo de cada ejecución (la página lo avisa). Se miden hasta 2000 elementos y Stooge se omite
+  con n > 200.
 - Tras publicar un cambio, el navegador puede mostrar la versión anterior unos minutos (caché de
   GitHub Pages); se soluciona recargando con Ctrl + F5.
 

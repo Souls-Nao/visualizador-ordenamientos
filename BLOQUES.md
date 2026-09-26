@@ -64,7 +64,7 @@ terminarlo se actualiza su ficha y la bitácora.
 | B12 | Pulido, pestañas y extras | D-20, D-23, D-24 | B09 | H5 | ✅ |
 | B13 | Documentación, pruebas finales y entrega | D-21, T-03, D-22, E-01 | todos | H5–H6 | ✅ (E-01 pendiente) |
 | B14 | Ajustes de alcance: sin benchmark, tamaño libre y complejidad visual | Requisitos 2 y 8 | B08, B09 | — | ✅ |
-| B15 | Ventana Crecimiento (gráfica de la práctica) | Requisito 8 | B07, B14 | — | ✅ |
+| B15 | Complejidad en acción: gráfica en vivo y crecimiento | Requisito 8 | B07, B09, B14 | — | ✅ |
 
 ### Grafo de dependencias
 
@@ -87,7 +87,7 @@ graph TD
   B09 --> B12[B12 Pulido]
   B12 --> B13[B13 Docs y entrega]
   B13 --> B14[B14 Ajustes de alcance]
-  B14 --> B15[B15 Ventana Crecimiento]
+  B14 --> B15[B15 Complejidad en acción]
 ```
 
 ### Flujo de datos en tiempo de ejecución (visualizador)
@@ -130,7 +130,7 @@ Los archivos marcados con ✔ ya existen en el repositorio.
 │   │   ├── eventos.js         ✔  B01
 │   │   ├── datos.js           ✔  B02
 │   │   ├── metricas.js        ✔  B07
-│   │   └── crecimiento.js     ✔  B15  medición por tamaños (sin DOM)
+│   │   └── crecimiento.js     ✔  B15  medición con prefijos del arreglo (sin DOM)
 │   ├── algoritmos/
 │   │   ├── selectionSort.js   ✔  B03  ┐
 │   │   ├── bubbleSort.js      ✔  B03  │
@@ -152,7 +152,8 @@ Los archivos marcados con ✔ ya existen en el repositorio.
 │   │   ├── preferencias.js    ✔  B12
 │   │   ├── atajos.js          ✔  B12
 │   │   ├── complejidad.js     ✔  B14  colores y gráfica de complejidad
-│   │   ├── ventanaCrecimiento.js ✔ B15  ventana con la gráfica de crecimiento
+│   │   ├── graficaVivo.js     ✔  B15  comparaciones durante la animación
+│   │   ├── graficaCrecimiento.js ✔ B15 crecimiento según el tamaño (al terminar)
 │   │   ├── panelCodigo.js     ✔  B06
 │   │   ├── panelAlgoritmo.js  ✔  B08
 │   │   ├── controles.js       ✔  B08
@@ -211,8 +212,8 @@ contenedor · `vista-` sección de pestaña · `tabla-` tabla · `bench-` campo 
 | `COLORES` | `render/canvasBarras.js` (B04) | un color por valor de `ESTADOS_COLOR` | B04, leyenda B08 |
 | `NOMBRES_ESTADO` | `render/canvasBarras.js` (B04) | texto de cada estado para la leyenda | B08 |
 | `CLASES` | `ui/complejidad.js` (B14) | clase, etiqueta, color y fórmula de cada complejidad | B08, B09, B12, B15 |
-| `MEDIDAS`, `CRECIMIENTO_N_MIN/MAX`, `PUNTOS`, `LIMITE_STOOGE_CRECIMIENTO` | `core/crecimiento.js` (B15) | `comparaciones`/`tiempo`, 10 a 2000, 10 tamaños, 200 | B15 |
-| `COLOR_ALGORITMO` | `ui/ventanaCrecimiento.js` (B15) | un color por algoritmo (paleta de `benchmark.py`) | B15 |
+| `MEDIDAS`, `CRECIMIENTO_N_MAX`, `PUNTOS`, `LIMITE_STOOGE_CRECIMIENTO` | `core/crecimiento.js` (B15) | `comparaciones`/`tiempo`, 2000, 10 tamaños, 200 | B15 |
+| `COLOR_ALGORITMO` | `ui/graficaCrecimiento.js` (B15) | un color por algoritmo (paleta de `benchmark.py`) | B15 |
 
 > Los colores de las barras viven **solo** en `COLORES` (B04), tal como indica el comentario de
 > `ESTADOS_COLOR`. La leyenda se genera desde ahí, así que el canvas y la leyenda nunca se desincronizan.
@@ -228,10 +229,8 @@ Los define B00. Ningún JS usa un ID que no esté aquí; si hace falta uno nuevo
 | `zona-seleccion` | casillas de algoritmos (las genera JS desde `ALGORITMOS`) | B08 |
 | `btn-todos`, `btn-ninguno` | atajos de selección | B09 |
 | `inp-tamano` | campo numérico, entero de 2 a 10000 (B14) | B08 |
-| `btn-crecimiento` | abre la ventana Crecimiento | B15 |
-| `dlg-crecimiento`, `btn-cerrar-crecimiento` | `<dialog>` y su botón de cierre | B15 |
-| `form-crecimiento`, `sel-medida`, `inp-crecimiento-n`, `btn-calcular-crecimiento` | controles de la ventana | B15 |
-| `lbl-crecimiento`, `zona-grafica-crecimiento`, `tabla-crecimiento` | mensaje, gráfica y datos | B15 |
+| `zona-grafica-vivo` | gráfica de comparaciones durante la animación | B15 |
+| `sel-medida`, `lbl-crecimiento`, `zona-grafica-crecimiento`, `tabla-crecimiento` | crecimiento: medida, mensaje, gráfica y datos | B15 |
 | `btn-nueva-lista` | nueva lista con el mismo tamaño y patrón | B08 |
 | `btn-reproducir`, `btn-pausar`, `btn-paso`, `btn-reiniciar` | controles de reproducción | B08 |
 | `inp-velocidad`, `lbl-velocidad` | range 0–100 (escala logarítmica) y valor en pasos/s | B05, B08 |
@@ -261,8 +260,8 @@ Los define B00. Ningún JS usa un ID que no esté aquí; si hace falta uno nuevo
 | `.complejidad` | etiqueta de complejidad; el color lo pone JS desde `CLASES` | B14 |
 | `.grafica-complejidad` y sus `__eje`, `__curva--principal/peor/fondo`, `__texto` | gráfica SVG | B14 |
 | `.ficha__nota` | nota bajo la gráfica de la ficha | B14 |
-| `.ventana`, `.ventana__cabecera`, `.ventana__controles`, `.ventana__grafica`, `.boton--acento` | ventana Crecimiento | B15 |
-| `.grafica-crecimiento` y sus `__rejilla`, `__eje`, `__texto`, `__titulo`, `__teorica`, `__serie`; `.leyenda--plana`, `.leyenda__nota` | gráfica de crecimiento | B15 |
+| `.graficas-complejidad`, `.tarjeta`, `.tarjeta__cabecera`, `.campo--linea`, `.datos`, `.ventana__grafica` | apartado Complejidad en acción | B15 |
+| `.grafica-crecimiento` y sus `__rejilla`, `__eje`, `__texto`, `__titulo`, `__teorica`, `__serie`, `__actual`; `.leyenda--plana`, `.leyenda__nota` | ambas gráficas | B15 |
 | `.marcador` | contenido provisional que un bloque posterior reemplaza | B00 |
 | `.atajos`, `kbd` | ayuda de atajos de teclado | B12 |
 
@@ -695,34 +694,52 @@ gráfica con Quick (peor caso punteado) y velocidad inicial 20 tras recargar.
 
 ---
 
-### B15: Ventana Crecimiento ✅
+### B15: Complejidad en acción ✅
 
-- **Motivo:** requisito 8; el integrante eligió llevar al visualizador la gráfica de su práctica en
-  Python (`benchmark.py`), midiendo comparaciones y, opcionalmente, tiempo.
-- **Archivos:** `js/core/crecimiento.js`, `js/ui/ventanaCrecimiento.js`; `<dialog>` y botón en
-  `index.html`; estilos en `componentes.css`; montaje en `main.js`; 3 pruebas en `test.html`.
+- **Motivo:** requisito 8. Primero fue una ventana con la gráfica de la práctica; a propuesta del
+  integrante pasó a ser un apartado fijo debajo del código y la ficha, con el mismo arreglo de las barras.
+- **Archivos:** `js/core/crecimiento.js`, `js/ui/graficaVivo.js`, `js/ui/graficaCrecimiento.js`;
+  apartado en `index.html`; estilos en `componentes.css`; `escena.js` gana `alActualizar`; montaje en
+  `main.js`; pruebas en `test.html`.
+
+**Dos gráficas:**
+1. **Comparaciones durante la animación** (en vivo): se actualiza en cada cuadro con `escena.resumen`.
+   Eje X = pasos de cada algoritmo, eje Y = comparaciones acumuladas; referencias horizontales con lo
+   esperado para n (n log n, n², …).
+2. **Crecimiento según el tamaño** (al terminar todos): prefijos del mismo arreglo (n/10, 2n/10, …, n);
+   comparaciones o tiempo; curvas teóricas de fondo; el punto grande es la ejecución animada; datos
+   en un desplegable "Ver datos".
 
 **Exporta (contrato):**
 ```js
 // core/crecimiento.js (sin DOM)
 export const MEDIDAS = { COMPARACIONES: 'comparaciones', TIEMPO: 'tiempo' };
-export function tamanosHasta(nMax) {}            // 10 tamaños equiespaciados hasta nMax
-export function medirComparaciones(id, lista) {} // contarEjecucion (B07)
-export function medirTiempo(id, lista) {}        // ms por ejecución, medido por lotes de ≥ 5 ms
-export async function calcularCrecimiento({ ids, nMax, medida, alProgreso }) {}
-// → { medida, tamanos, series: { id: (número|null)[] }, omitidos: string[] }
+export function tamanosHasta(nMax) {}
+export function medirComparaciones(id, lista) {}
+export function medirTiempo(id, lista) {}          // ms por ejecución, lotes de ≥ 5 ms
+export async function calcularCrecimiento({ ids, lista, medida, alProgreso }) {}
+// → { medida, tamanos, series: { id: (número|null)[] }, omitidos, recortada }
 
-// ui/ventanaCrecimiento.js
-export function crearGraficaCrecimiento(resultado) {}   // <svg class="grafica-crecimiento">
+// ui/graficaVivo.js
+export function crearGraficaVivo(contenedor) {}   // → { actualizar(resumen, n) }
+
+// ui/graficaCrecimiento.js
+export const COLOR_ALGORITMO = { ... };
+export function nodo(nombre, atributos, texto) {}  // helper SVG compartido
+export function crearLeyenda(ids, nota) {}
+export function crearGraficaCrecimiento(resultado) {}
 export function pintarTablaCrecimiento(tabla, resultado) {}
-export function iniciarVentanaCrecimiento(escena) {}
+export function crearSeccionCrecimiento({ zona, tabla, selMedida, mensaje }) {}  // → { mostrar(ids, lista), ocultar() }
+
+// escena.js (se suma a B08/B09)
+crearEscena({ ..., alActualizar() })   // tras cada avance, reinicio o cambio de paneles
 ```
-**Reglas:** una lista aleatoria por tamaño, la misma para todos (como `benchmark.py`) · se mide el
-mismo generador que se anima · pausa la animación al abrir · usa los algoritmos seleccionados (todos si
-no hay ninguno) · n sugerida = tamaño actual (mínimo 100), y 1000 al elegir tiempo · curvas teóricas
-solo con comparaciones · Stooge se omite con n > 200 · cede el control entre tamaños para no congelar.
-**Verificación:** 78/78; n = 100 con comparaciones en 0.2 s y n = 1000 con tiempo en 0.8 s; sin
-desborde a 375 px.
+**Reglas:** la gráfica en vivo se reinicia si cambian los algoritmos, el tamaño o todo vuelve a cero;
+guarda como máximo 400 puntos por línea · el crecimiento se calcula al llamar `alTerminarTodos` y se
+oculta al volver a `detenido` · mide hasta los primeros 2000 elementos · Stooge se omite con n > 200 ·
+con tiempo y menos de 500 elementos se avisa que es poco confiable.
+**Verificación:** 80/80; flujo completo con 4 algoritmos y n = 60 en la página; Reiniciar limpia ambas
+gráficas.
 
 ---
 
@@ -735,6 +752,7 @@ desborde a 375 px.
 | 25/09/2026 | B08 | `escena.js` pasa de B09 a B08 (escena base con varios paneles); B09 solo agrega la comparación | Los controles de B08 necesitan una escena y un bucle sobre N paneles no cuesta más que uno | B09 (ficha ajustada, aún sin código) |
 | 25/09/2026 | B08/B09 | `pintarFicha(contenedor, id, n)` y `pintarResumen(tabla, resumen, n)` reciben el tamaño de la lista; `escena.nuevaLista` se llama siempre con `PATRONES.ALEATORIA` | Gráfica de complejidad y columna "Esperado para n" (B14) | `main.js` |
 | 25/09/2026 | B10/B11 | Retirados | La actividad solo pide el visualizador | B12 ya no depende de B11 |
+| 25/09/2026 | B15 | `calcularCrecimiento` recibe `lista` en lugar de `nMax`; la ventana (`ventanaCrecimiento.js`, `#dlg-crecimiento`, `#btn-crecimiento`) se reemplaza por el apartado inferior | Usar el mismo arreglo de las barras y tenerlo siempre visible | `main.js`, `test.html` |
 
 ---
 
@@ -783,7 +801,8 @@ desborde a 375 px.
 | 25/09/2026 | B12 | Preferencias, atajos, pestaña Algoritmos y ajustes para celular; bloque cerrado ✅ | `10cf24b`, `50fe4e0` | — |
 | 25/09/2026 | B13 | README, capturas, corrección de velocidad inicial, pruebas finales en la URL pública | `7b3a8c1`, `d4acb83` | — |
 | 25/09/2026 | B14 | Sin benchmark, tamaño libre, sin patrones, complejidad visual | `85d7981`, `da0406d` | — |
-| 25/09/2026 | B15 | Ventana Crecimiento con comparaciones y tiempo | ver `git log --grep B15` | Entrega (E-01) |
+| 25/09/2026 | B15 | Ventana Crecimiento con comparaciones y tiempo | `6c7f4d9`, `f3efff4` | — |
+| 25/09/2026 | B15 | Apartado Complejidad en acción: gráfica en vivo + crecimiento con el mismo arreglo | ver `git log --grep B15` | Entrega (E-01) |
 
 ---
 

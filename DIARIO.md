@@ -6,6 +6,71 @@ La entrada más reciente va arriba.
 
 ---
 
+## 25/09/2026 · B15 (revisión): Complejidad en acción
+
+**Decisión:** se eligió "vivo + final" (ver el análisis más abajo).
+
+**Gráfica en vivo: "Comparaciones durante la animación"** (`graficaVivo.js`).
+- La escena llama a `alActualizar` después de cada avance; `main.js` le pasa a la gráfica el resumen
+  de los paneles (pasos y comparaciones de cada uno).
+- Cada algoritmo es una línea: X = pasos que lleva, Y = comparaciones acumuladas. Como todos avanzan
+  los mismos pasos por cuadro, las líneas crecen al ritmo de las barras; un algoritmo que termina deja
+  de avanzar.
+- Líneas punteadas horizontales con lo esperado para el n actual ("n² ≈ 3,600", "n log n ≈ 354"): se
+  ve hacia dónde va cada uno.
+- Para no crecer sin límite, cada línea guarda como máximo 400 puntos: al pasarse se descarta uno de
+  cada dos, conservando el primero y el último.
+- Se reinicia sola si cambian los algoritmos o el tamaño, o si todo vuelve a cero (Reiniciar).
+
+**Gráfica final: "Crecimiento según el tamaño"** (`graficaCrecimiento.js` + `core/crecimiento.js`).
+- Aparece cuando terminan todos y se oculta al volver a empezar.
+- Usa el **mismo arreglo** de las barras: para n = 60 mide los primeros 6, 12, …, 60 elementos. El
+  último punto (más grande) es exactamente la ejecución que se acaba de ver.
+- Selector "Comparaciones / Tiempo (ms)"; con tiempo y menos de 500 elementos se avisa que no es
+  confiable. Con más de 2000 elementos se miden los primeros 2000.
+- La tabla de datos va en un desplegable "Ver datos" para no ocupar espacio.
+
+**Incidente durante el cambio:** un script de edición falló a la mitad y borró de `index.html` el
+bloque de código, leyenda y ficha. Se detectó con `git diff` y se reconstruyó a partir de la versión
+confirmada (`git show HEAD:index.html`), aplicando solo los cambios buscados.
+
+**Pruebas (80/80):** prefijos del arreglo (el último punto es la lista completa) y gráfica en vivo (un
+punto por avance, referencias n log n y n², reinicio al volver a cero).
+
+---
+
+## Análisis: crecimiento con el mismo arreglo y como apartado de la interfaz (25/09/2026)
+
+**Propuesta del integrante:** que Crecimiento use el mismo arreglo de las barras, que deje de ser un
+botón y pase a ser un apartado debajo, con la gráfica animándose junto con el proceso.
+
+**1. Mismo arreglo: sí, buena idea.** Se puede hacer usando **prefijos** de la lista del usuario: con
+n = 60, los tamaños 6, 12, …, 60 son los primeros 6, 12, … elementos de esa misma lista. El último punto
+es exactamente la ejecución que se ve en las barras, así que la gráfica y la animación hablan de los
+mismos datos.
+
+**2. ¿Animar la gráfica de crecimiento?** Hay un problema de fondo: esa gráfica pone en el eje X el
+**tamaño n**, y la animación corre con **un solo n**. Los otros tamaños no se animan: se calculan al
+instante. Si la gráfica "se fuera dibujando" durante la animación, sería una animación de adorno, no el
+proceso real.
+
+**Lo que sí se puede animar de verdad** es otra gráfica: **"Comparaciones a lo largo del tiempo"**.
+- Eje X: pasos de la animación. Eje Y: comparaciones acumuladas de cada algoritmo.
+- Se actualiza en cada cuadro con los mismos contadores de los paneles: avanza exactamente al ritmo
+  de las barras.
+- Líneas horizontales punteadas marcan lo esperado para ese n (n log n y n²): se ve hacia dónde va cada
+  algoritmo, y los rápidos se aplanan al terminar mientras los O(n²) siguen subiendo.
+- Es la "temporalidad" real del proceso, sincronizada con la animación.
+
+**Recomendación: un apartado inferior con las dos gráficas.**
+- Durante la animación: la gráfica en vivo **comparaciones vs pasos**.
+- Al terminar todos los algoritmos aparece debajo la gráfica **crecimiento vs n** (con prefijos del
+  mismo arreglo, comparaciones o tiempo), marcando el punto del n actual. Es el resumen: muestra por
+  qué terminaron en ese orden.
+- El botón y la ventana desaparecen; todo queda visible en la página.
+
+---
+
 ## 25/09/2026 · B15: Ventana Crecimiento
 
 **Decisión:** de las propuestas para el requisito 8 se eligió la **A** (la gráfica de la práctica en
