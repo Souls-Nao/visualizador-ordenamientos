@@ -212,7 +212,7 @@ contenedor · `vista-` sección de pestaña · `tabla-` tabla · `bench-` campo 
 | `COLORES` | `render/canvasBarras.js` (B04) | un color por valor de `ESTADOS_COLOR` | B04, leyenda B08 |
 | `NOMBRES_ESTADO` | `render/canvasBarras.js` (B04) | texto de cada estado para la leyenda | B08 |
 | `CLASES` | `ui/complejidad.js` (B14) | clase, etiqueta, color y fórmula de cada complejidad | B08, B09, B12, B15 |
-| `MEDIDAS`, `CRECIMIENTO_N_MAX`, `PUNTOS`, `LIMITE_STOOGE_CRECIMIENTO` | `core/crecimiento.js` (B15) | `comparaciones`/`tiempo`, 2000, 10 tamaños, 200 | B15 |
+| `MEDIDAS`, `CRECIMIENTO_N_MAX`, `LIMITE_STOOGE_CRECIMIENTO` (y `PUNTOS`, interno) | `core/crecimiento.js` (B15) | `comparaciones`/`tiempo`, 2000, 10 tamaños, 200 | B15 |
 | `COLOR_ALGORITMO` | `ui/graficaCrecimiento.js` (B15) | un color por algoritmo (paleta de `benchmark.py`) | B15 |
 
 > Los colores de las barras viven **solo** en `COLORES` (B04), tal como indica el comentario de
@@ -260,7 +260,7 @@ Los define B00. Ningún JS usa un ID que no esté aquí; si hace falta uno nuevo
 | `.complejidad` | etiqueta de complejidad; el color lo pone JS desde `CLASES` | B14 |
 | `.grafica-complejidad` y sus `__eje`, `__curva--principal/peor/fondo`, `__texto` | gráfica SVG | B14 |
 | `.ficha__nota` | nota bajo la gráfica de la ficha | B14 |
-| `.graficas-complejidad`, `.tarjeta`, `.tarjeta__cabecera`, `.campo--linea`, `.datos`, `.ventana__grafica` | apartado Complejidad en acción | B15 |
+| `.graficas-complejidad`, `.tarjeta`, `.tarjeta__cabecera`, `.campo--linea`, `.datos`, `.tarjeta__grafica` | apartado Complejidad en acción | B15 |
 | `.grafica-crecimiento` y sus `__rejilla`, `__eje`, `__texto`, `__titulo`, `__teorica`, `__serie`, `__actual`; `.leyenda--plana`, `.leyenda__nota` | ambas gráficas | B15 |
 | `.marcador` | contenido provisional que un bloque posterior reemplaza | B00 |
 | `.atajos`, `kbd` | ayuda de atajos de teclado | B12 |
@@ -802,7 +802,8 @@ gráficas.
 | 25/09/2026 | B13 | README, capturas, corrección de velocidad inicial, pruebas finales en la URL pública | `7b3a8c1`, `d4acb83` | — |
 | 25/09/2026 | B14 | Sin benchmark, tamaño libre, sin patrones, complejidad visual | `85d7981`, `da0406d` | — |
 | 25/09/2026 | B15 | Ventana Crecimiento con comparaciones y tiempo | `6c7f4d9`, `f3efff4` | — |
-| 25/09/2026 | B15 | Apartado Complejidad en acción: gráfica en vivo + crecimiento con el mismo arreglo | ver `git log --grep B15` | Entrega (E-01) |
+| 25/09/2026 | B15 | Apartado Complejidad en acción: gráfica en vivo + crecimiento con el mismo arreglo | `5896ad9`, `0e9979a` | — |
+| 25/09/2026 | — | Limpieza: CSS y comentarios que quedaban del benchmark y de la ventana | ver `git log -1 --grep limpieza` | Entrega (E-01) |
 
 ---
 

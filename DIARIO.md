@@ -6,6 +6,24 @@ La entrada más reciente va arriba.
 
 ---
 
+## 25/09/2026 · Limpieza de restos
+
+Revisión de todo el código para quitar lo que ya no se usaba tras retirar el benchmark (B14) y la
+ventana de crecimiento (B15):
+- **CSS:** se eliminaron `.formulario`, `.formulario__acciones`, `.progreso`, `.graficas`, `.grafica`
+  (eran del benchmark y de Chart.js) y `.panel__lienzo.marcador` (el panel provisional de B00 ya no
+  existe). `.ventana__grafica` pasó a llamarse `.tarjeta__grafica`, porque ya no hay ventana.
+- **Comentarios:** `config.js`, `eventos.js`, `datos.js`, `quickSort.js`, `pestanas.js` y
+  `preferencias.js` ya no mencionan el benchmark ni el selector de patrón; `datos.js` explica por qué
+  conserva los 4 patrones (los usan las pruebas).
+- **Exportaciones:** `PUNTOS` (crecimiento.js) deja de exportarse porque solo se usa dentro del
+  archivo. Las demás exportaciones sin uso externo (`RANGO_VALORES`, `marcarTodoOrdenado`,
+  `medirTiempo`, `pintarTablaCrecimiento`) se quedan: forman parte de contratos documentados y se usan
+  dentro de su propio archivo.
+- Se agrega `CURSO.md` (índice del curso de 33 capítulos).
+
+---
+
 ## 25/09/2026 · B15 (revisión): Complejidad en acción
 
 **Decisión:** se eligió "vivo + final" (ver el análisis más abajo).
