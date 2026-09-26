@@ -3,8 +3,7 @@
 Aplicación web para **visualizar, ejecutar y comparar** los ocho algoritmos de ordenamiento vistos
 en clase: Selection, Bubble, Insertion, Gnome, Exchange, Stooge, Merge y Quick Sort. Muestra qué
 elementos se comparan, cuáles se intercambian, qué línea del código se está ejecutando y cómo
-cambia el arreglo hasta quedar ordenado. También mide los tiempos reales de cada algoritmo, como la
-práctica en Python de la que nace el proyecto.
+cambia el arreglo hasta quedar ordenado.
 
 **Aplicación publicada:** https://souls-nao.github.io/visualizador-ordenamientos/
 
@@ -23,38 +22,31 @@ práctica en Python de la que nace el proyecto.
 
 ## Qué se puede hacer
 
-**Visualizador**
-- Elegir uno, varios o todos los algoritmos (casillas y botones Todos / Ninguno).
-- Generar una lista de 5 a 120 elementos con cuatro patrones: aleatoria, ordenada, invertida y casi
-  ordenada.
-- Reproducir, pausar, avanzar paso a paso y reiniciar con **la misma lista**.
-- Cambiar la velocidad de 1 a 2000 pasos por segundo.
-- Ver las barras con color según su estado, contadores en vivo (comparaciones, movimientos y pasos),
-  un mensaje con la operación actual y el **código Python con la línea activa resaltada**.
-- Consultar la ficha del algoritmo: complejidad en mejor, promedio y peor caso, espacio adicional,
-  estabilidad y una descripción.
+| Requisito | Cómo se cumple |
+|---|---|
+| 1. Seleccionar el algoritmo | Casillas para uno, varios o todos (botones Todos / Ninguno). |
+| 2. Generar un arreglo | Campo con el tamaño que se quiera (2 a 10 000) y botón **Nueva lista**; valores aleatorios. |
+| 3. Iniciar la ejecución | **Reproducir**, **Pausar** y **Paso** (avanza una operación). |
+| 4. Visualizar los cambios | Barras en canvas con color por estado: sin tocar, comparando, intercambio, pivote y ordenado. |
+| 5. Reiniciar | **Reiniciar** vuelve al inicio con **la misma lista**. |
+| 6. Cambiar la velocidad | Deslizador de 1 a 2000 pasos por segundo. |
+| 7. Nombre del algoritmo | En el título de cada panel, en el panel de código y en la ficha. |
+| 8. Complejidad temporal | Etiqueta de color por clase, ficha con mejor/promedio/peor caso y gráfica **"¿Cómo crece el trabajo?"**. |
+| 9. Mismos datos para comparar | Todos los paneles usan la misma lista y avanzan a la misma velocidad. |
 
-**Comparación**
-- Todos los paneles arrancan con la misma lista y avanzan a la misma velocidad, así que termina
-  primero el algoritmo que necesita menos pasos.
-- Al terminar aparece una tabla con el orden de llegada, comparaciones, intercambios, escrituras y
-  pasos de cada algoritmo.
+Además:
+- **Código Python** del algoritmo con la línea que se está ejecutando resaltada.
+- **Contadores en vivo** (comparaciones, movimientos y pasos) y un mensaje con la operación actual.
+- **Tabla resumen** al terminar: orden de llegada, comparaciones, intercambios, escrituras, pasos y
+  el valor esperado según la complejidad (por ejemplo, n² ≈ 900 con 30 elementos).
+- Pestaña **Algoritmos** con la tabla comparativa de los ocho, atajos de teclado (Espacio, →, R, N),
+  preferencias guardadas en el navegador y diseño adaptable a celular.
 
-**Benchmark**
-- Mide los tiempos reales con tamaño inicial, incremento y tamaño final (las mismas entradas y
-  validaciones que `main.py`), más repeticiones y tipo de datos.
-- Dibuja las cuatro gráficas de `benchmark.py`, muestra una tabla y exporta a CSV.
-
-**Extras:** atajos de teclado (Espacio, →, R, N), preferencias guardadas en el navegador, tabla
-comparativa de los ocho algoritmos y diseño adaptable a celular.
-
-| Un algoritmo | Resumen de la comparación |
+| Un algoritmo, con su ficha y gráfica de complejidad | Resumen de la comparación |
 |---|---|
 | ![Visualizador](docs/capturas/visualizador.png) | ![Resumen](docs/capturas/comparacion-resumen.png) |
 
-| Benchmark | Pestaña Algoritmos |
-|---|---|
-| ![Benchmark](docs/capturas/benchmark.png) | ![Algoritmos](docs/capturas/algoritmos.png) |
+![Pestaña Algoritmos](docs/capturas/algoritmos.png)
 
 ## Cómo ejecutarlo
 
@@ -71,8 +63,8 @@ python -m http.server 8000
 Después abrir http://localhost:8000 en el navegador. También sirve la extensión **Live Server** de
 VS Code.
 
-**Pruebas:** con el servidor encendido, abrir http://localhost:8000/test.html. La página ejecuta 76
-pruebas automáticas y debe mostrar "76 de 76 pruebas pasaron".
+**Pruebas:** con el servidor encendido, abrir http://localhost:8000/test.html. Debe mostrar
+"75 de 75 pruebas pasaron".
 
 **Publicación:** GitHub Pages publica la rama `main` desde la raíz. Cada `push` a `main` actualiza
 el sitio en uno o dos minutos.
@@ -102,9 +94,6 @@ pantalla ya los incluye:
 - **Quick** acomoda los tres grupos (menores, iguales y mayores) dentro del mismo arreglo en lugar de
   crear listas nuevas.
 
-El **benchmark** mide las funciones originales de la práctica sin estos cambios
-(`js/benchmark/fieles.js`).
-
 ## Cómo funciona
 
 ```
@@ -126,15 +115,14 @@ generador del algoritmo ──yield──► evento { type, indices, line }
    tiempo para decidir cuántos pasos tocan en cada cuadro según la velocidad elegida.
 4. **La escena** (`js/ui/escena.js`) reparte esos pasos entre todos los paneles, que comparten la
    misma lista base, y registra el orden de llegada.
-5. **El benchmark** corre en un Web Worker (`js/benchmark/worker.js`) para no congelar la página.
+5. **La complejidad** (`js/ui/complejidad.js`) da el color de cada clase, dibuja la gráfica de
+   crecimiento en SVG y calcula el valor esperado para n.
 
 **Dónde se calcula cada métrica**
 - Comparaciones, intercambios, escrituras, movimientos y pasos: `registrarEvento` en
   `js/core/metricas.js`, con las mismas reglas para los ocho algoritmos.
 - Orden de llegada y resumen: `js/ui/escena.js`.
-- Tiempos: `medirLote` en `js/benchmark/worker.js`. Antes de medir se hace un calentamiento, cada
-  medición es un lote de al menos 5 ms dividido entre sus vueltas (el navegador redondea el reloj a
-  unos 0.1 ms) y se guarda la mediana de las repeticiones.
+- Valor esperado según la complejidad: `estimarOperaciones` en `js/ui/complejidad.js`.
 
 ## Estructura
 
@@ -147,18 +135,15 @@ js/core/        eventos.js · datos.js · metricas.js
 js/algoritmos/  un archivo por algoritmo · index.js (registro) · fuentesPython.js
 js/render/      espejo.js · canvasBarras.js
 js/motor/       reproductor.js
-js/ui/          escena.js · panelAlgoritmo.js · panelCodigo.js · controles.js · ficha.js · …
-js/benchmark/   fieles.js · worker.js · benchmark.js · graficas.js · csv.js
-vendor/         Chart.js 4.4.7 (licencia MIT)
+js/ui/          escena.js · panelAlgoritmo.js · panelCodigo.js · controles.js · ficha.js · complejidad.js · …
 docs/           eventos.md · capturas/ · referencia/ (práctica en Python y conteos.py)
 ```
 
 ## Documentación
 
-- [BLOQUES.md](BLOQUES.md): el proyecto dividido en 14 bloques de desarrollo, con lo que exporta y
-  consume cada uno, constantes, IDs del HTML y cambios de contrato.
-- [DIARIO.md](DIARIO.md): explicación de cada bloque, de las decisiones y de los problemas
-  encontrados.
+- [BLOQUES.md](BLOQUES.md): el proyecto dividido en bloques de desarrollo, con lo que exporta y consume
+  cada uno, constantes, IDs del HTML y cambios de contrato.
+- [DIARIO.md](DIARIO.md): explicación de cada bloque, de las decisiones y de los problemas encontrados.
 - [docs/eventos.md](docs/eventos.md): el formato de los eventos que emiten los algoritmos.
 - `docs/referencia/`: la práctica original (`ordenamientos.py`, `benchmark.py`, `main.py`) y
   `conteos.py`, que genera los conteos esperados de las pruebas ejecutando el mismo Python que muestra
@@ -166,18 +151,18 @@ docs/           eventos.md · capturas/ · referencia/ (práctica en Python y co
 
 ## Pruebas
 
-`test.html` reúne 76 pruebas que se ejecutan en el navegador, entre ellas:
-- los 8 algoritmos ordenan 27 listas (casos borde y los 4 patrones) sin modificar la entrada;
+`test.html` reúne 75 pruebas que se ejecutan en el navegador, entre ellas:
+- los 8 algoritmos ordenan 27 listas (casos borde y distintos patrones) sin modificar la entrada;
 - hacen **las mismas comparaciones y escrituras** que el código Python mostrado en pantalla;
 - cada línea resaltada corresponde a la operación que se anima;
-- espejo, reproductor (con reloj simulado), panel de código, métricas, paneles, comparación, versiones
-  fieles, validación del formulario, Web Worker y CSV.
+- espejo, reproductor (con reloj simulado), panel de código, métricas, paneles, comparación y
+  complejidad.
 
 **Limitaciones conocidas**
-- Los tiempos del benchmark varían un poco entre ejecuciones y entre navegadores; con listas pequeñas
-  el ruido relativo es mayor. Más repeticiones dan curvas más estables.
-- Stooge Sort se limita a 30 elementos en el visualizador y a 500 en el benchmark por su crecimiento
-  n^2.71.
+- Con listas muy grandes (más barras que píxeles) las barras se enciman, y los algoritmos O(n²)
+  necesitan muchos pasos: con 1000 elementos, Bubble hace cerca de medio millón. El tamaño máximo es
+  10 000.
+- Stooge Sort crece como n^2.71; con más de 30 elementos la página avisa cuántos pasos hará.
 - En Merge Sort, al comparar se resalta la posición de donde salió el valor izquierdo; esa barra puede
   ya estar sobrescrita, porque el valor real está en la copia `izquierda`.
 - Tras publicar un cambio, el navegador puede mostrar la versión anterior unos minutos (caché de
@@ -185,9 +170,9 @@ docs/           eventos.md · capturas/ · referencia/ (práctica en Python y co
 
 ## Tecnologías
 
-HTML5, CSS3 y JavaScript con módulos, sin frameworks ni compilación. Canvas 2D para las barras,
-`requestAnimationFrame` para la animación, Web Workers para el benchmark y Chart.js (copia local)
-para las gráficas. Publicado gratis en GitHub Pages.
+HTML5, CSS3 y JavaScript con módulos, sin frameworks, librerías ni compilación. Canvas 2D para las
+barras, SVG para la gráfica de complejidad y `requestAnimationFrame` para la animación. Publicado
+gratis en GitHub Pages.
 
 ## Uso de inteligencia artificial
 
@@ -201,4 +186,4 @@ defenderlo en la revisión.
 
 VisuAlgo (NUS), The Sound of Sorting (Timo Bingmann), alg0.dev (midudev) y otros visualizadores
 abiertos listados en el documento de planeación, de los que se tomaron ideas de diseño, no código.
-Documentación de MDN sobre `performance.now()`, Web Workers y Canvas, y la de GitHub Pages.
+Documentación de MDN sobre Canvas, SVG y `requestAnimationFrame`, y la de GitHub Pages.

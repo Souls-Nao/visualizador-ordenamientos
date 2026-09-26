@@ -6,6 +6,43 @@ La entrada más reciente va arriba.
 
 ---
 
+## 25/09/2026 · B14: Ajustes de alcance
+
+Revisión de los requisitos con el integrante.
+
+**1. Se quitó el benchmark.** La actividad solo pide el visualizador. Se eliminaron la pestaña, el
+código (`js/benchmark/`) y Chart.js (`vendor/`). Sigue en el historial de git por si se necesita. La
+evidencia cuantitativa que pide la comparación la dan los contadores y la tabla resumen.
+
+**2. Tamaño libre (requisito 2).** Antes era un deslizador de 5 a 120 que bajaba a 30 con Stooge. Ahora
+es un campo numérico: cualquier entero de 2 a 10 000. El tope existe solo por razones técnicas: con más
+barras que píxeles ya no se distinguen, y Bubble con 10 000 elementos haría unos 50 millones de pasos.
+Si se escribe algo inválido ("abc", 0, 1.5) se muestra el motivo y se restaura el tamaño anterior. Con
+Stooge ya no se limita el tamaño: se avisa cuántos pasos hará aproximadamente (n^2.71).
+
+**3. Sin patrones.** Los datos siempre son aleatorios. `generarDatos` conserva sus 4 patrones (B02 es un
+contrato cerrado y las pruebas los usan), pero la interfaz siempre pide `aleatoria`.
+
+**4. Complejidad visual (requisito 8).** Tres formas de verla:
+- **Color por clase:** verde O(n), azul O(n log n), naranja O(n²) y rojo O(n^2.71), en la etiqueta de
+  cada panel, en la ficha, en el resumen y en la pestaña Algoritmos. Los colores viven solo en `CLASES`
+  (`complejidad.js`).
+- **Gráfica "¿Cómo crece el trabajo?"** en la ficha (SVG hecho a mano, sin librerías): curvas de n,
+  n log n y n² de 1 hasta el tamaño de la lista actual (más n^2.71 para Stooge). La del algoritmo va
+  gruesa y, si su peor caso es distinto (Quick), punteada. Se ve de inmediato que n² se dispara y
+  n log n casi no crece. Debajo: "Con tu lista (n = 30), n² ≈ 900 operaciones".
+- **Columna "Esperado para n"** en el resumen: el valor de la fórmula junto a las comparaciones reales,
+  para comprobar que los conteos siguen la complejidad (por ejemplo, Bubble con n = 30: n² ≈ 900 y hace
+  unas 430 comparaciones, del orden de n²/2).
+
+**Otros ajustes.** La velocidad se guardaba reconvertida desde el deslizador (20 → 19); ahora se
+guarda la real. Una prueba del panel de código dependía del ancho de la ventana; ahora usa un
+contenedor de ancho fijo. Capturas del README regeneradas.
+
+**Pruebas:** 75/75.
+
+---
+
 ## 25/09/2026 · B13: README, pruebas finales y despliegue
 
 **README.** Cubre todo lo que pide la actividad: URL publicada, integrantes, instrucciones de

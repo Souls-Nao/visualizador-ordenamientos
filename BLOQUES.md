@@ -41,6 +41,7 @@ terminarlo se actualiza su ficha y la bitácora.
 | 🟨 | En progreso / hecho con correcciones pendientes |
 | ✅ | Terminado (contrato congelado) |
 | ⏸️ | Recortado o pospuesto (plan de recorte 6.6) |
+| ⛔ | Retirado del proyecto (el código sigue en el historial de git) |
 
 ---
 
@@ -58,10 +59,11 @@ terminarlo se actualiza su ficha y la bitácora.
 | B07 | Métricas: contadores y mensaje | D-13 | B01 | H3 | ✅ |
 | B08 | Visualizador: paneles, escena y controles | D-12, D-13 (UI) | B02–B07 | H3 | ✅ |
 | B09 | Comparación: varios paneles y resumen | D-15, D-16 | B08 | H4 | ✅ |
-| B10 | Benchmark: versiones fieles y Worker | D-17, D-18 | B02, B03 | H5 | ✅ |
-| B11 | Benchmark: gráficas, tabla y CSV | D-19, D-24 (CSV) | B10 | H5 | ✅ |
-| B12 | Pulido, pestañas y extras | D-20, D-23, D-24 | B09, B11 | H5 | ✅ |
+| B10 | Benchmark: versiones fieles y Worker | D-17, D-18 | B02, B03 | H5 | ⛔ |
+| B11 | Benchmark: gráficas, tabla y CSV | D-19, D-24 (CSV) | B10 | H5 | ⛔ |
+| B12 | Pulido, pestañas y extras | D-20, D-23, D-24 | B09 | H5 | ✅ |
 | B13 | Documentación, pruebas finales y entrega | D-21, T-03, D-22, E-01 | todos | H5–H6 | ✅ (E-01 pendiente) |
+| B14 | Ajustes de alcance: sin benchmark, tamaño libre y complejidad visual | Requisitos 2 y 8 | B08, B09 | — | ✅ |
 
 ### Grafo de dependencias
 
@@ -81,12 +83,9 @@ graph TD
   B07 --> B08
   B00 --> B08
   B08 --> B09[B09 Comparación]
-  B02 --> B10[B10 Benchmark Worker]
-  B03 --> B10
-  B10 --> B11[B11 Gráficas y CSV]
   B09 --> B12[B12 Pulido]
-  B11 --> B12
   B12 --> B13[B13 Docs y entrega]
+  B13 --> B14[B14 Ajustes de alcance]
 ```
 
 ### Flujo de datos en tiempo de ejecución (visualizador)
@@ -149,19 +148,13 @@ Los archivos marcados con ✔ ya existen en el repositorio.
 │   │   ├── pestanas.js           B00  cambio de sección
 │   │   ├── preferencias.js    ✔  B12
 │   │   ├── atajos.js          ✔  B12
+│   │   ├── complejidad.js     ✔  B14  colores y gráfica de complejidad
 │   │   ├── panelCodigo.js     ✔  B06
 │   │   ├── panelAlgoritmo.js  ✔  B08
 │   │   ├── controles.js       ✔  B08
 │   │   ├── ficha.js           ✔  B08
 │   │   └── escena.js          ✔  B08 (B09 le agrega la comparación)
-│   └── benchmark/
-│       ├── fieles.js          ✔  B10
-│       ├── worker.js          ✔  B10
-│       ├── benchmark.js       ✔  B10
-│       ├── graficas.js        ✔  B11
-│       └── csv.js             ✔  B11
-├── vendor/
-│   └── chart.umd.min.js       ✔  B11  Chart.js 4.4.7 (MIT)
+│   └── (benchmark/ y vendor/ retirados en B14)
 └── docs/
     ├── eventos.md             ✔  B01
     ├── referencia/               B00  ordenamientos.py, benchmark.py, main.py originales
@@ -201,21 +194,19 @@ contenedor · `vista-` sección de pestaña · `tabla-` tabla · `bench-` campo 
 | `TIPOS_EVENTO` | `core/eventos.js` (B01) | `compare, swap, write, pivot, sorted, done` | B03, B04, B07 |
 | `ESTADOS_COLOR` | `core/eventos.js` (B01) | `sin-tocar, comparando, intercambio, pivote, ordenado` | B04 |
 | `COLOR_POR_TIPO` | `core/eventos.js` (B01) | evento → estado | B04 |
-| `RANGO_VALORES` | `core/datos.js` (B02) | `{ minimo: 0, maximo: 10000 }` | B04, B10 |
-| `PATRONES` | `core/datos.js` (B02) | `aleatoria, ordenada, invertida, casi-ordenada` | B08, B10 |
-| `ALGORITMOS` | `algoritmos/index.js` (B03) | registro de los 8 | B06, B08, B09, B10, B12 |
+| `RANGO_VALORES` | `core/datos.js` (B02) | `{ minimo: 0, maximo: 10000 }` | B04 |
+| `PATRONES` | `core/datos.js` (B02) | `aleatoria, ordenada, invertida, casi-ordenada`; la interfaz solo usa `ALEATORIA` (B14) | B08, pruebas |
+| `ALGORITMOS` | `algoritmos/index.js` (B03) | registro de los 8 | B06, B08, B09, B12, B14 |
 | `FUENTES_PYTHON` | `algoritmos/fuentesPython.js` (B03) | código Python por algoritmo; se usa vía `ALGORITMOS[id].fuente` | B03, B06 |
-| `TAMANO_MIN` / `TAMANO_MAX` / `TAMANO_DEFECTO` | `config.js` (B00) | `5` / `120` / `30` | B08 |
-| `LIMITE_STOOGE_VISUAL` | `config.js` (B00) | `30` | B08, B09 |
+| `TAMANO_MIN` / `TAMANO_MAX` / `TAMANO_DEFECTO` | `config.js` (B00) | `2` / `10000` (tope técnico) / `30` | B08 |
+| `LIMITE_STOOGE_VISUAL` | `config.js` (B00) | `30`: desde aquí solo se **avisa** (B14) | B08 |
 | `VELOCIDAD_MIN` / `VELOCIDAD_MAX` / `VELOCIDAD_DEFECTO` | `config.js` (B00) | `1` / `2000` / `20` pasos por segundo | B05, B08 |
 | `MAX_PASOS_POR_CUADRO` | `config.js` (B00) | `5000` | B05 |
-| `LIMITE_STOOGE_BENCH` | `config.js` (B00) | `500` | B10 |
 | `CLAVE_PREFERENCIAS` | `config.js` (B00) | `'vo.preferencias'` | B12 |
 | `ENLACES` | `config.js` (B00) | URLs del repositorio, tablero y sitio | B00, B12 |
 | `COLORES` | `render/canvasBarras.js` (B04) | un color por valor de `ESTADOS_COLOR` | B04, leyenda B08 |
 | `NOMBRES_ESTADO` | `render/canvasBarras.js` (B04) | texto de cada estado para la leyenda | B08 |
-| `GRUPOS_GRAFICAS` | `benchmark/graficas.js` (B11) | las 4 gráficas de `benchmark.py` | B11 |
-| `COLOR_ALGORITMO` | `benchmark/graficas.js` (B11) | colores `tab:` de `benchmark.py` | B11 |
+| `CLASES` | `ui/complejidad.js` (B14) | clase, etiqueta, color y fórmula de cada complejidad | B08, B09, B12 |
 
 > Los colores de las barras viven **solo** en `COLORES` (B04), tal como indica el comentario de
 > `ESTADOS_COLOR`. La leyenda se genera desde ahí, así que el canvas y la leyenda nunca se desincronizan.
@@ -227,11 +218,10 @@ Los define B00. Ningún JS usa un ID que no esté aquí; si hace falta uno nuevo
 | ID | Elemento | Lo conecta |
 |---|---|---|
 | `nav-pestanas` | `<nav>` con botones `[data-vista="visualizador"…]` | B00 |
-| `vista-visualizador`, `vista-benchmark`, `vista-algoritmos`, `vista-acerca` | `<section class="vista">` | B00 |
+| `vista-visualizador`, `vista-algoritmos`, `vista-acerca` | `<section class="vista">` | B00 |
 | `zona-seleccion` | casillas de algoritmos (las genera JS desde `ALGORITMOS`) | B08 |
 | `btn-todos`, `btn-ninguno` | atajos de selección | B09 |
-| `inp-tamano`, `lbl-tamano` | range 5–120 y su valor | B08 |
-| `sel-patron` | select; sus `value` son los de `PATRONES` | B08 |
+| `inp-tamano` | campo numérico, entero de 2 a 10000 (B14) | B08 |
 | `btn-nueva-lista` | nueva lista con el mismo tamaño y patrón | B08 |
 | `btn-reproducir`, `btn-pausar`, `btn-paso`, `btn-reiniciar` | controles de reproducción | B08 |
 | `inp-velocidad`, `lbl-velocidad` | range 0–100 (escala logarítmica) y valor en pasos/s | B05, B08 |
@@ -241,12 +231,6 @@ Los define B00. Ningún JS usa un ID que no esté aquí; si hace falta uno nuevo
 | `zona-leyenda` | leyenda de colores | B08 |
 | `zona-ficha` | ficha del algoritmo seleccionado | B08 |
 | `zona-resumen`, `tabla-resumen` | resumen de la comparación | B09 |
-| `form-bench` | formulario del benchmark | B10 |
-| `bench-inicio`, `bench-incremento`, `bench-fin`, `bench-repeticiones`, `bench-patron` | campos | B10 |
-| `btn-bench-ejecutar`, `btn-bench-cancelar` | botones | B10 |
-| `bench-progreso`, `bench-mensaje` | `<progress>` y texto de estado | B10 |
-| `zona-graficas`, `tabla-bench` | salidas | B11 |
-| `btn-bench-csv` | exportar CSV | B11 |
 | `tabla-algoritmos` | tabla de la pestaña Algoritmos | B12 |
 | `enlace-repo`, `enlace-tablero` | enlaces de la pestaña Acerca | B00 |
 
@@ -264,7 +248,9 @@ Los define B00. Ningún JS usa un ID que no esté aquí; si hace falta uno nuevo
 | `.leyenda__item`, `.leyenda__color` | leyenda | B00, B08 |
 | `.ficha`, `.ficha__tabla` | ficha del algoritmo | B00, B08 |
 | `.aviso`, `.aviso--error` | mensajes | B00 |
-| `.grafica` | contenedor de cada gráfica de Chart.js | B11 |
+| `.complejidad` | etiqueta de complejidad; el color lo pone JS desde `CLASES` | B14 |
+| `.grafica-complejidad` y sus `__eje`, `__curva--principal/peor/fondo`, `__texto` | gráfica SVG | B14 |
+| `.ficha__nota` | nota bajo la gráfica de la ficha | B14 |
 | `.marcador` | contenido provisional que un bloque posterior reemplaza | B00 |
 | `.atajos`, `kbd` | ayuda de atajos de teclado | B12 |
 
@@ -607,61 +593,17 @@ botones desactivados, 3 algoritmos → resumen en orden, Reiniciar lo oculta.
 
 ---
 
-### B10: Benchmark: versiones fieles y Worker ✅
+### B10: Benchmark: versiones fieles y Worker ⛔
 
-- **Tareas:** D-17, D-18 · **Depende de:** B00 (`config.js`), B02 · **Commits:** ver bitácora
-- **Archivos:** `js/benchmark/fieles.js`, `js/benchmark/worker.js`, `js/benchmark/benchmark.js`;
-  en `index.html` el aviso JS/Python se separó de `#bench-mensaje`.
-
-**Exporta (contrato):**
-```js
-// fieles.js — traducción directa de ordenamientos.py, sin las mejoras del visualizador
-export const FIELES = { selection: fn, ..., quick: fn };   // fn(lista) → lista nueva ordenada
-
-// benchmark.js
-export function validarConfig(datos) {}   // → { ok, errores: string[], config }
-export function iniciarBenchmark({ alTerminar, alIniciar }) {}
-```
-**Protocolo del Worker** (`new Worker(new URL('./worker.js', import.meta.url), { type: 'module' })`):
-recibe `{ tipo:'iniciar', config:{ inicio, incremento, fin, repeticiones, patron } }` · envía
-`{ tipo:'progreso', hecho, total }`, `{ tipo:'fin', resultados }` o `{ tipo:'error', mensaje }` ·
-cancelar = `worker.terminate()`.
-
-**`resultados`** (lo consume B11):
-`{ tamanos:number[], patron, repeticiones, tiempos:{ id:(ms|null)[] }, omitidos:{ id:motivo } }`
-
-**Reglas:** una lista por tamaño y una copia por algoritmo (como `benchmark.py`) · calentamiento
-general previo · cada medición es un lote de al menos 5 ms dividido entre sus vueltas (ajustado en
-B11) · mediana de `repeticiones` lotes · Stooge se omite (null) con n > `LIMITE_STOOGE_BENCH` ·
-validación: enteros, inicio ≥ 1, incremento > 0, inicio ≤ fin, 1–20 repeticiones, máx. 100 tamaños.
-**Verificación:** 3 pruebas nuevas (75/75); en la página, 100→500 de 100 en 100 terminó en 1 s sin
-congelar la interfaz, y Cancelar detiene una medición larga.
+Retirado en B14: la actividad solo pide el visualizador. El código (`js/benchmark/fieles.js`,
+`worker.js`, `benchmark.js`) queda en el historial de git (commits `38590ae` y `b89f5f2`) por si se
+quiere recuperar.
 
 ---
 
-### B11: Benchmark: gráficas, tabla y CSV ✅
+### B11: Benchmark: gráficas, tabla y CSV ⛔
 
-- **Tareas:** D-19, D-24 (CSV) · **Depende de:** B10 · **Commits:** ver bitácora
-- **Archivos:** `js/benchmark/graficas.js`, `js/benchmark/csv.js`, `vendor/chart.umd.min.js`;
-  `index.html` carga Chart.js con `defer` antes de `main.js`; `.grafica` en CSS; ajuste de medición
-  en `worker.js`.
-
-**Exporta (contrato):**
-```js
-// graficas.js (usa window.Chart)
-export const GRUPOS_GRAFICAS = [{ titulo, ids, destacado? }, ...];   // las 4 de benchmark.py
-export function dibujarGraficas(contenedor, resultados) {}   // destruye las anteriores
-export function pintarTablaBench(tabla, resultados) {}
-export function limpiarResultados(contenedor, tabla) {}
-// csv.js
-export function resultadosACSV(resultados) {}   // 'n,Selection Sort (ms),...' con \r\n
-export function descargarCSV(resultados, nombre?) {}
-```
-**Reglas:** mismos títulos y colores que `benchmark.py`; Merge y Quick con línea más gruesa en su
-gráfica; un tiempo omitido (`null`) deja hueco en la línea, `—` en la tabla y vacío en el CSV;
-`#btn-bench-csv` solo se activa con resultados.
-**Verificación:** 76/76; en la página aparecen 4 gráficas y la tabla, y repetir la medición no las
-duplica (siguen 4 instancias de Chart).
+Retirado en B14 junto con B10 (incluida la copia de Chart.js en `vendor/`).
 
 ---
 
@@ -709,6 +651,38 @@ realizar la entrega.
 
 ---
 
+### B14: Ajustes de alcance ✅
+
+- **Motivo:** revisión de los requisitos de la actividad (25/09/2026).
+- **Archivos:** nuevo `js/ui/complejidad.js`; cambian `controles.js`, `ficha.js`, `panelAlgoritmo.js`,
+  `main.js`, `config.js`, `index.html`, `componentes.css` y `test.html`; se eliminan `js/benchmark/`,
+  `vendor/` y `docs/capturas/benchmark.png`.
+
+**Cambios:**
+1. **Sin benchmark:** se quitan la pestaña, su código y Chart.js (B10 y B11 → ⛔).
+2. **Tamaño libre (requisito 2):** `#inp-tamano` es un campo numérico; cualquier entero de 2 a 10000
+   (tope técnico). Con Stooge ya no se limita: se avisa cuántos pasos hará.
+3. **Sin patrones:** los datos siempre son aleatorios; se quitó `#sel-patron`. `PATRONES` sigue en
+   `datos.js` (contrato B02) y lo usan las pruebas.
+4. **Complejidad visual (requisito 8):** color por clase (verde O(n), azul O(n log n), naranja O(n²),
+   rojo O(n^2.71)) en paneles, ficha y tablas; gráfica SVG "¿Cómo crece el trabajo?" en la ficha; y
+   columna "Esperado para n" en el resumen.
+
+**Exporta (contrato):**
+```js
+// complejidad.js
+export const CLASES = { 'O(n)': { clave, etiqueta, color, f(n) }, 'O(n log n)', 'O(n²)', 'O(n^2.71)' };
+export function claseDe(notacion) {}
+export function crearEtiquetaComplejidad(notacion) {}   // <span class="complejidad">
+export function estimarOperaciones(id, n) {}            // f(n) del caso promedio, redondeado
+export function crearGraficaComplejidad(id, n) {}       // <svg class="grafica-complejidad">
+```
+**Verificación:** `test.html` 75/75 (se quitaron 4 del benchmark, se agregaron 3 de complejidad y
+una de `index.html`); en la página: tamaño 300, validación de "abc" y 0, aviso de Stooge con 60,
+gráfica con Quick (peor caso punteado) y velocidad inicial 20 tras recargar.
+
+---
+
 ## 5. Cambios de contrato
 
 | Fecha | Bloque | Qué cambió | Por qué | Bloques actualizados |
@@ -716,6 +690,8 @@ realizar la entrega.
 | 25/09/2026 | B01 | `line` pasa de "línea de `ordenamientos.py`" a "línea 1-indexada dentro de `ALGORITMOS[id].fuente`" | Merge y Quick muestran una versión adaptada, y cada panel muestra solo su algoritmo | B03 (todas las líneas), `docs/eventos.md`; B06 aún no existía |
 | 25/09/2026 | B03 | `ALGORITMOS[id]` agrega `fuente` y `categoria`; `fuentesPython.js` pasa de B06 a B03 | Sin la fuente no se podían fijar las líneas correctas; `categoria` la usan B10 y B11 | B06 (ficha ajustada, aún sin código) |
 | 25/09/2026 | B08 | `escena.js` pasa de B09 a B08 (escena base con varios paneles); B09 solo agrega la comparación | Los controles de B08 necesitan una escena y un bucle sobre N paneles no cuesta más que uno | B09 (ficha ajustada, aún sin código) |
+| 25/09/2026 | B08/B09 | `pintarFicha(contenedor, id, n)` y `pintarResumen(tabla, resumen, n)` reciben el tamaño de la lista; `escena.nuevaLista` se llama siempre con `PATRONES.ALEATORIA` | Gráfica de complejidad y columna "Esperado para n" (B14) | `main.js` |
+| 25/09/2026 | B10/B11 | Retirados | La actividad solo pide el visualizador | B12 ya no depende de B11 |
 
 ---
 
@@ -724,16 +700,16 @@ realizar la entrega.
 | Requisito | Dónde se cumple |
 |---|---|
 | 1. Seleccionar el algoritmo | B08 (`#zona-seleccion`) |
-| 2. Generar un arreglo | B02 + B08 (`#btn-nueva-lista`) |
+| 2. Generar un arreglo | B02 + B08 + B14 (`#inp-tamano` libre y `#btn-nueva-lista`) |
 | 3. Iniciar la ejecución | B05 + B08 (`#btn-reproducir`) |
 | 4. Visualizar gráficamente | B04 + B08 |
 | 5. Reiniciar la simulación | B08 (`#btn-reiniciar`, misma `listaBase`) |
 | 6. Cambiar la velocidad | B05 + B08 (`#inp-velocidad`) |
 | 7. Mostrar el nombre | B03 (`ALGORITMOS[id].nombre`) → B08 |
-| 8. Mostrar la complejidad | B03 (`mejor/promedio/peor`) → B08 ficha |
+| 8. Mostrar la complejidad | B03 (`mejor/promedio/peor`) → B08 ficha + B14 (colores, gráfica y "Esperado para n") |
 | 9. Mismos datos para comparar | B09 (`listaBase` compartida) |
 | Comparación de 2 o más | B09 |
-| Evidencia cuantitativa | B07 + B09 (conteos) · B10/B11 (tiempos) |
+| Evidencia cuantitativa | B07 + B09 (conteos y orden de llegada) + B14 (esperado para n) |
 | 8 algoritmos identificables | B03 (un archivo por algoritmo) |
 | Hosting gratuito | B00 / B13 (GitHub Pages) |
 | README y documentación | B13 + este archivo + `docs/` |
@@ -762,7 +738,8 @@ realizar la entrega.
 | 25/09/2026 | B10 | Versiones fieles, Web Worker, validación y progreso del benchmark; bloque cerrado ✅ | `38590ae`, `e6d44c2` | — |
 | 25/09/2026 | B11 | Gráficas con Chart.js, tabla, CSV y medición por lotes; bloque cerrado ✅ | `b89f5f2`, `f3089b7` | — |
 | 25/09/2026 | B12 | Preferencias, atajos, pestaña Algoritmos y ajustes para celular; bloque cerrado ✅ | `10cf24b`, `50fe4e0` | — |
-| 25/09/2026 | B13 | README, capturas, corrección de velocidad inicial, pruebas finales en la URL pública | `7b3a8c1`, `d4acb83` | Entrega (E-01) |
+| 25/09/2026 | B13 | README, capturas, corrección de velocidad inicial, pruebas finales en la URL pública | `7b3a8c1`, `d4acb83` | — |
+| 25/09/2026 | B14 | Sin benchmark, tamaño libre, sin patrones, complejidad visual | ver `git log --grep B14` | Entrega (E-01) |
 
 ---
 
