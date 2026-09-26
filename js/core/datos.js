@@ -3,13 +3,12 @@
  * ─────────────────────────────────────────────────────────────────────────
  * Bloque 02 — Generación de datos de entrada.
  *
- * Genera los arreglos de números que se ordenan, tanto para el visualizador
- * como (más adelante) para el benchmark. Este módulo no sabe nada de
- * algoritmos, del DOM ni de límites de la interfaz: solo sabe construir
- * arreglos según un patrón. Los límites de tamaño del visualizador
- * (5 a 120 elementos, sección 5.4 del entregable de planeación) se validan
- * en la UI que llame a este módulo (Bloque 08/09), no aquí, porque el
- * benchmark (Bloque 10/11) necesita generar arreglos mucho más grandes.
+ * Genera los arreglos de números que se ordenan. Este módulo no sabe nada
+ * de algoritmos, del DOM ni de límites de la interfaz: solo construye
+ * arreglos según un patrón. La interfaz siempre pide el patrón aleatorio;
+ * los otros tres se conservan porque las pruebas (test.html) los usan para
+ * cubrir listas ordenadas, invertidas y casi ordenadas. Los límites de
+ * tamaño (2 a 10 000) los valida js/ui/controles.js, no este módulo.
  *
  * No importa nada de otros módulos del proyecto.
  */

@@ -6,9 +6,9 @@
  * La página es una sola: cada pestaña del encabezado muestra una de las
  * secciones <section class="vista" id="vista-...">. El botón de la pestaña
  * indica qué sección abre con el atributo data-vista, por ejemplo
- * data-vista="benchmark" abre #vista-benchmark.
+ * data-vista="algoritmos" abre #vista-algoritmos.
  *
- * La pestaña activa se guarda en la dirección (#benchmark), así que al
+ * La pestaña activa se guarda en la dirección (#algoritmos), así que al
  * recargar la página, o al compartir el enlace, se abre la misma sección.
  *
  * No importa nada de otros módulos del proyecto.
@@ -29,7 +29,7 @@ export function iniciarPestanas(nav = document.getElementById('nav-pestanas')) {
   /**
    * Muestra la sección `nombre` y oculta las demás.
    *
-   * @param {string} nombre  Valor de data-vista, por ejemplo 'benchmark'.
+   * @param {string} nombre  Valor de data-vista, por ejemplo 'algoritmos'.
    */
   function mostrar(nombre) {
     if (!nombres.includes(nombre)) nombre = VISTA_INICIAL;

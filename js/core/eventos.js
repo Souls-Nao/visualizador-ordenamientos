@@ -12,9 +12,9 @@
  * Decisión de diseño (ver sección 5.1 del entregable de planeación,
  * referente DSA_Algorithms_Visualizer): los eventos NUNCA llevan una copia
  * completa del arreglo. Solo llevan índices y, cuando aplica, el valor
- * escrito. Quien consume los eventos (el renderer de Canvas, o el worker
- * del benchmark si algún día los necesitara) debe mantener su propio
- * espejo del arreglo y aplicar la operación que el evento describe.
+ * escrito. Quien necesita los valores del arreglo mantiene su propia copia
+ * (el espejo, js/render/espejo.js) y aplica la operación que el evento
+ * describe; las métricas (js/core/metricas.js) solo cuentan eventos.
  *
  * No importa nada de otros módulos del proyecto (es la base de todo).
  */
@@ -139,8 +139,9 @@ export function crearEventoOrdenado(index, line) {
 
 /**
  * Construye el evento final de una ejecución. No lleva índices ni línea:
- * es la señal de que el reproductor (Bloque 05) debe detenerse y de que
- * el renderer puede, si quiere, marcar todo el arreglo como ordenado.
+ * es la señal de que el algoritmo terminó. Al recibirlo, el espejo
+ * (Bloque 04) pinta todas las barras como ordenadas y el panel deja de
+ * pedir eventos.
  *
  * @returns {{type: string}}
  */

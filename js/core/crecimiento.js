@@ -25,7 +25,7 @@ export const MEDIDAS = Object.freeze({ COMPARACIONES: 'comparaciones', TIEMPO: '
 
 /** Tamaño máximo que se mide: con más, un algoritmo O(n²) tardaría segundos por punto. */
 export const CRECIMIENTO_N_MAX = 2000;
-export const PUNTOS = 10;
+const PUNTOS = 10;
 
 /** Stooge Sort (n^2.71) se omite por encima de este tamaño. */
 export const LIMITE_STOOGE_CRECIMIENTO = 200;

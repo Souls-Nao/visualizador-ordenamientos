@@ -17,8 +17,8 @@
  * Al terminar la partición, los iguales al pivote ya están en su lugar
  * definitivo y solo se ordenan los grupos de menores y de mayores.
  *
- * El benchmark (Bloque 10) usa además la versión original con listas
- * nuevas, para medir tiempos igual que la práctica.
+ * La versión original de la práctica (con listas nuevas) sigue en
+ * docs/referencia/ordenamientos.py como referencia.
  */
 import {
   crearEventoComparar,

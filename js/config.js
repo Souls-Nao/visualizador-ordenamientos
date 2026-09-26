@@ -3,13 +3,13 @@
  * ─────────────────────────────────────────────────────────────────────────
  * Bloque 00 — Configuración de la interfaz.
  *
- * Límites y ajustes que usa la interfaz del visualizador y del benchmark.
+ * Límites y ajustes que usa la interfaz del visualizador.
  * Cada valor vive solo aquí: ningún otro módulo debe escribir estos números
  * a mano (ver BLOQUES.md, sección 3.2).
  *
  * Lo que NO está aquí, porque ya tiene su propio dueño:
  * - Tipos de evento y estados de color → js/core/eventos.js (Bloque 01).
- * - Rango de valores y patrones de datos → js/core/datos.js (Bloque 02).
+ * - Rango de valores de la lista → js/core/datos.js (Bloque 02).
  * - Colores concretos de las barras → js/render/canvasBarras.js (Bloque 04).
  *
  * No importa nada de otros módulos del proyecto.
