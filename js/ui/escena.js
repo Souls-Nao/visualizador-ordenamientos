@@ -26,6 +26,7 @@ import { crearPanelAlgoritmo } from './panelAlgoritmo.js';
  * @param {(estado: string) => void} [opciones.alCambiarEstado]   estado del reproductor
  * @param {(id: string|null) => void} [opciones.alCambiarActivo]   panel seleccionado
  * @param {(resumen: Object[]) => void} [opciones.alTerminarTodos]  todos llegaron al final
+ * @param {() => void} [opciones.alActualizar]  después de cada avance, reinicio o cambio de paneles
  */
 export function crearEscena({
   zonaPaneles,
@@ -33,6 +34,7 @@ export function crearEscena({
   alCambiarEstado = () => {},
   alCambiarActivo = () => {},
   alTerminarTodos = () => {},
+  alActualizar = () => {},
 }) {
   const estado = {
     listaBase: [],       // nunca se modifica; cada panel trabaja sobre su copia
@@ -58,6 +60,7 @@ export function crearEscena({
       estado.llegada.push(...recienTerminados.map((p) => p.id));
 
       resaltarLineaActiva();
+      alActualizar();
       if (!quedaTrabajo && paneles.length) alTerminarTodos(resumen());
       return quedaTrabajo;
     },
@@ -119,6 +122,7 @@ export function crearEscena({
 
     const sigueActivo = estado.seleccionados.includes(estado.panelActivo);
     seleccionarPanel(sigueActivo ? estado.panelActivo : (estado.seleccionados[0] ?? null));
+    alActualizar();
   }
 
   return {
@@ -140,6 +144,7 @@ export function crearEscena({
       estado.llegada = [];
       paneles.forEach((p) => p.reiniciar(estado.listaBase));
       panelCodigo.limpiar();
+      alActualizar();
     },
 
     reproducir() {

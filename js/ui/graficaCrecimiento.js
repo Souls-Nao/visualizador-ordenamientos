@@ -1,18 +1,19 @@
 /**
- * js/ui/ventanaCrecimiento.js
+ * js/ui/graficaCrecimiento.js
  * ─────────────────────────────────────────────────────────────────────────
- * Ventana "Crecimiento" (requisito 8): la gráfica de la práctica en Python
- * (benchmark.py) dentro del visualizador.
+ * Gráfica "Crecimiento según el tamaño" (requisito 8): la gráfica de la
+ * práctica en Python (benchmark.py) dentro del visualizador.
  *
- * Muestra, para los algoritmos seleccionados, cómo crece el trabajo al
- * crecer n: una línea por algoritmo y, en modo comparaciones, las curvas
- * teóricas n log n y n² de fondo como referencia. Debajo, la tabla con
- * los datos. La medición está en js/core/crecimiento.js.
+ * Aparece debajo cuando terminan todos los algoritmos. Usa prefijos del
+ * mismo arreglo de las barras (core/crecimiento.js): una línea por
+ * algoritmo y, en modo comparaciones, las curvas teóricas n log n y n² de
+ * fondo. El último punto, resaltado, es la ejecución que se acaba de ver.
+ * Debajo va la tabla con los datos.
  */
 import { ALGORITMOS } from '../algoritmos/index.js';
 import { CLASES } from './complejidad.js';
 import {
-  MEDIDAS, CRECIMIENTO_N_MIN, CRECIMIENTO_N_MAX, LIMITE_STOOGE_CRECIMIENTO, calcularCrecimiento,
+  MEDIDAS, CRECIMIENTO_N_MAX, LIMITE_STOOGE_CRECIMIENTO, calcularCrecimiento,
 } from '../core/crecimiento.js';
 
 /** Un color por algoritmo: los mismos de COLORES en benchmark.py (paleta "tab"). */
@@ -22,20 +23,18 @@ export const COLOR_ALGORITMO = Object.freeze({
 });
 
 /**
- * Tamaño sugerido al abrir: el de la lista actual, pero al menos 100 para
- * que se vea la forma. Con tiempo se sube a 1000: con listas pequeñas pesa
- * más el costo fijo de cada ejecución que el algoritmo, y las curvas salen
- * engañosas (Merge parecería más lento que Selection).
+ * Con listas pequeñas el tiempo lo domina el costo fijo de cada ejecución
+ * y las curvas de tiempo salen engañosas; por debajo de esto se avisa.
  */
-const N_SUGERIDO_MIN = 100;
-const N_SUGERIDO_TIEMPO = 1000;
+const N_TIEMPO_CONFIABLE = 500;
 
 const SVG = 'http://www.w3.org/2000/svg';
 const ANCHO = 720;
 const ALTO = 380;
 const M = { izq: 72, der: 64, arr: 16, aba: 46 };
 
-function nodo(nombre, atributos = {}, texto) {
+/** Crea un elemento SVG con sus atributos. También lo usa graficaVivo.js. */
+export function nodo(nombre, atributos = {}, texto) {
   const el = document.createElementNS(SVG, nombre);
   for (const [k, v] of Object.entries(atributos)) el.setAttribute(k, v);
   if (texto !== undefined) el.textContent = texto;
@@ -138,7 +137,12 @@ export function crearGraficaCrecimiento(resultado) {
       class: 'grafica-crecimiento__serie',
     }));
     for (const [n, v] of puntos) {
-      const punto = nodo('circle', { cx: x(n), cy: y(v), r: 3.5, fill: color });
+      // El último tamaño es la ejecución que se animó: su punto va más grande.
+      const esActual = n === nMax;
+      const punto = nodo('circle', {
+        cx: x(n), cy: y(v), r: esActual ? 6 : 3.5, fill: color,
+        class: esActual ? 'grafica-crecimiento__actual' : '',
+      });
       punto.append(nodo('title', {}, `${ALGORITMOS[id].nombre} · n = ${n}: ${formatear(v, medida)}`));
       zona.append(punto);
     }
@@ -165,8 +169,11 @@ export function pintarTablaCrecimiento(tabla, { medida, tamanos, series }) {
   });
 }
 
-/** Leyenda: color de cada algoritmo y, con comparaciones, las curvas de referencia. */
-function crearLeyenda(ids, medida) {
+/**
+ * Leyenda con el color de cada algoritmo y una nota opcional.
+ * También la usa graficaVivo.js.
+ */
+export function crearLeyenda(ids, nota) {
   const leyenda = document.createElement('div');
   leyenda.className = 'leyenda leyenda--plana';
   for (const id of ids) {
@@ -178,90 +185,79 @@ function crearLeyenda(ids, medida) {
     item.append(muestra, ALGORITMOS[id].nombre);
     leyenda.append(item);
   }
-  if (medida === MEDIDAS.COMPARACIONES) {
-    const nota = document.createElement('span');
-    nota.className = 'leyenda__item leyenda__nota';
-    nota.textContent = 'Líneas punteadas: referencia n log n y n²';
-    leyenda.append(nota);
+  if (nota) {
+    const texto = document.createElement('span');
+    texto.className = 'leyenda__item leyenda__nota';
+    texto.textContent = nota;
+    leyenda.append(texto);
   }
   return leyenda;
 }
 
 /**
- * Conecta el botón #btn-crecimiento con la ventana #dlg-crecimiento.
+ * Controla la tarjeta de crecimiento: se muestra al terminar todos los
+ * algoritmos y se oculta al volver a empezar. El selector de medida vuelve
+ * a calcular con los mismos datos.
  *
- * @param {ReturnType<import('./escena.js').crearEscena>} escena
+ * @param {Object} elementos
+ * @param {HTMLElement} elementos.zona         Donde va la gráfica.
+ * @param {HTMLTableElement} elementos.tabla
+ * @param {HTMLSelectElement} elementos.selMedida
+ * @param {HTMLElement} elementos.mensaje
+ * @returns {{ mostrar(ids: string[], lista: number[]): void, ocultar(): void }}
  */
-export function iniciarVentanaCrecimiento(escena) {
-  const $ = (id) => document.getElementById(id);
-  const ventana = $('dlg-crecimiento');
-  const inpN = $('inp-crecimiento-n');
-  const selMedida = $('sel-medida');
-  const btnCalcular = $('btn-calcular-crecimiento');
-  const mensaje = $('lbl-crecimiento');
-  const zonaGrafica = $('zona-grafica-crecimiento');
-  const tabla = $('tabla-crecimiento');
+export function crearSeccionCrecimiento({ zona, tabla, selMedida, mensaje }) {
+  const MENSAJE_INICIAL = 'Aparece cuando terminan todos los algoritmos.';
   let ids = [];
+  let lista = [];
   let calculo = 0; // identifica el cálculo en curso; uno nuevo invalida al anterior
 
-  inpN.min = CRECIMIENTO_N_MIN;
-  inpN.max = CRECIMIENTO_N_MAX;
+  function limpiar(texto) {
+    zona.replaceChildren();
+    tabla.replaceChildren();
+    mensaje.textContent = texto;
+  }
 
   async function calcular() {
-    const nMax = Number(inpN.value);
-    if (!Number.isInteger(nMax) || nMax < CRECIMIENTO_N_MIN || nMax > CRECIMIENTO_N_MAX) {
-      mensaje.textContent = `n debe ser un entero entre ${CRECIMIENTO_N_MIN} y ${CRECIMIENTO_N_MAX}.`;
-      mensaje.classList.add('aviso--error');
-      return;
-    }
+    if (!ids.length) return;
     const miCalculo = ++calculo;
     const medida = selMedida.value;
-    mensaje.classList.remove('aviso--error');
-    btnCalcular.disabled = true;
-
     const resultado = await calcularCrecimiento({
-      ids, nMax, medida,
+      ids, lista, medida,
       alProgreso: (hecho, total) => {
         if (miCalculo === calculo) mensaje.textContent = `Calculando… ${hecho} de ${total} tamaños`;
       },
     });
-    if (miCalculo !== calculo) return; // se pidió otro cálculo mientras tanto
+    if (miCalculo !== calculo) return; // se reinició o se pidió otra medida mientras tanto
 
-    btnCalcular.disabled = false;
-    zonaGrafica.replaceChildren(crearGraficaCrecimiento(resultado), crearLeyenda(ids, medida));
+    const notas = ['Cada tamaño n usa los primeros n elementos de tu lista; el punto grande es la ejecución que viste.'];
+    if (resultado.recortada) notas.push(`Se miden hasta los primeros ${CRECIMIENTO_N_MAX} elementos.`);
+    if (medida === MEDIDAS.TIEMPO && lista.length < N_TIEMPO_CONFIABLE) {
+      notas.push(`Con menos de ${N_TIEMPO_CONFIABLE} elementos el tiempo es poco confiable (domina el costo fijo de cada ejecución); las comparaciones muestran mejor la complejidad.`);
+    }
+    if (resultado.omitidos.length) notas.push(`Stooge Sort se omite con n > ${LIMITE_STOOGE_CRECIMIENTO}.`);
+
+    zona.replaceChildren(
+      crearGraficaCrecimiento(resultado),
+      crearLeyenda(ids, medida === MEDIDAS.COMPARACIONES ? 'Punteadas: referencia n log n y n²' : null),
+    );
     pintarTablaCrecimiento(tabla, resultado);
-    mensaje.textContent =
-      'Cada punto ordena una lista aleatoria de tamaño n, la misma para todos los algoritmos. ' +
-      (medida === MEDIDAS.TIEMPO
-        ? 'El tiempo varía un poco entre ejecuciones y computadoras; la forma de las curvas se mantiene.'
-        : 'Las comparaciones no dependen de la computadora, solo del algoritmo y de la lista.') +
-      (resultado.omitidos.length ? ` Stooge Sort se omite con n > ${LIMITE_STOOGE_CRECIMIENTO}.` : '');
+    mensaje.textContent = notas.join(' ');
   }
 
-  $('btn-crecimiento').addEventListener('click', () => {
-    escena.pausar();
-    const { seleccionados, listaBase } = escena.estado;
-    ids = seleccionados.length ? seleccionados : Object.keys(ALGORITMOS);
-    inpN.value = Math.min(CRECIMIENTO_N_MAX, Math.max(N_SUGERIDO_MIN, listaBase.length));
-    zonaGrafica.replaceChildren();
-    tabla.replaceChildren();
-    ventana.showModal();
-    calcular();
-  });
+  selMedida.addEventListener('change', calcular);
+  limpiar(MENSAJE_INICIAL);
 
-  $('form-crecimiento').addEventListener('submit', (e) => {
-    e.preventDefault();
-    calcular();
-  });
-  selMedida.addEventListener('change', () => {
-    if (selMedida.value === MEDIDAS.TIEMPO && Number(inpN.value) < N_SUGERIDO_TIEMPO) {
-      inpN.value = N_SUGERIDO_TIEMPO;
-    }
-    calcular();
-  });
-  $('btn-cerrar-crecimiento').addEventListener('click', () => {
-    calculo++; // descarta un cálculo en curso
-    btnCalcular.disabled = false;
-    ventana.close();
-  });
+  return {
+    mostrar(nuevosIds, nuevaLista) {
+      ids = [...nuevosIds];
+      lista = [...nuevaLista];
+      calcular();
+    },
+    ocultar() {
+      calculo++; // descarta un cálculo en curso
+      ids = [];
+      limpiar(MENSAJE_INICIAL);
+    },
+  };
 }

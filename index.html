@@ -37,7 +37,6 @@
           <div class="grupo__acciones">
             <button type="button" id="btn-todos" class="boton boton--chico">Todos</button>
             <button type="button" id="btn-ninguno" class="boton boton--chico">Ninguno</button>
-            <button type="button" id="btn-crecimiento" class="boton boton--chico boton--acento">Ver crecimiento</button>
           </div>
         </fieldset>
 
@@ -99,6 +98,36 @@
           </div>
         </aside>
       </div>
+
+      <!-- Complejidad en acción (requisito 8) -->
+      <div class="graficas-complejidad" aria-label="Complejidad en acción">
+        <article class="tarjeta">
+          <h2 class="subtitulo">Comparaciones durante la animación</h2>
+          <p class="ficha__nota">Cada línea avanza con su panel. Las punteadas marcan lo esperado para n
+            según la complejidad: los algoritmos rápidos se detienen pronto y los O(n²) siguen subiendo.</p>
+          <div id="zona-grafica-vivo" class="ventana__grafica"></div>
+        </article>
+        <article class="tarjeta">
+          <header class="tarjeta__cabecera">
+            <h2 class="subtitulo">Crecimiento según el tamaño</h2>
+            <label class="campo campo--linea">
+              <span>Medir</span>
+              <select id="sel-medida">
+                <option value="comparaciones">Comparaciones</option>
+                <option value="tiempo">Tiempo (ms)</option>
+              </select>
+            </label>
+          </header>
+          <p id="lbl-crecimiento" class="ficha__nota" role="status"></p>
+          <div id="zona-grafica-crecimiento" class="ventana__grafica"></div>
+          <details class="datos">
+            <summary>Ver datos</summary>
+            <div class="tabla-contenedor">
+              <table id="tabla-crecimiento" class="tabla"></table>
+            </div>
+          </details>
+        </article>
+      </div>
     </section>
 
     <!-- ═══ Algoritmos ═══ -->
@@ -134,32 +163,6 @@
 
   </main>
 
-  <!-- ═══ Ventana Crecimiento (requisito 8): la gráfica de benchmark.py ═══ -->
-  <dialog id="dlg-crecimiento" class="ventana" aria-labelledby="titulo-crecimiento">
-    <header class="ventana__cabecera">
-      <h2 id="titulo-crecimiento" class="subtitulo">Crecimiento: trabajo según el tamaño de la lista</h2>
-      <button type="button" id="btn-cerrar-crecimiento" class="boton boton--chico" aria-label="Cerrar">Cerrar</button>
-    </header>
-    <form id="form-crecimiento" class="ventana__controles">
-      <label class="campo">
-        <span>Medir</span>
-        <select id="sel-medida">
-          <option value="comparaciones">Comparaciones</option>
-          <option value="tiempo">Tiempo (ms)</option>
-        </select>
-      </label>
-      <label class="campo">
-        <span>Hasta n =</span>
-        <input type="number" id="inp-crecimiento-n" step="1" inputmode="numeric">
-      </label>
-      <button type="submit" id="btn-calcular-crecimiento" class="boton boton--primario">Calcular</button>
-    </form>
-    <p id="lbl-crecimiento" class="aviso" role="status"></p>
-    <div id="zona-grafica-crecimiento" class="ventana__grafica"></div>
-    <div class="tabla-contenedor">
-      <table id="tabla-crecimiento" class="tabla"></table>
-    </div>
-  </dialog>
 
   <footer class="pie">
     Ultima Chance · 2026

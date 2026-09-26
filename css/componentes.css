@@ -74,43 +74,48 @@ kbd {
   font-size: 0.75rem;
 }
 
-/* ── Ventana Crecimiento ── */
-.boton--acento {
-  border-color: var(--acento);
-  color: var(--acento);
+/* ── Complejidad en acción: dos tarjetas con gráficas ── */
+.graficas-complejidad {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: var(--esp-3);
+  align-items: start;
 }
 
-.ventana {
-  width: min(960px, 96vw);
-  max-height: 92vh;
-  padding: var(--esp-4);
+.tarjeta {
+  display: grid;
+  gap: var(--esp-2);
+  padding: var(--esp-3);
   border: 1px solid var(--borde);
   border-radius: var(--radio);
   background: var(--superficie);
-  color: var(--texto);
+  min-width: 0;
 }
 
-.ventana[open] {
-  display: grid;
-  gap: var(--esp-3);
-}
-
-.ventana::backdrop {
-  background: rgb(0 0 0 / 0.55);
-}
-
-.ventana__cabecera {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--esp-3);
-}
-
-.ventana__controles {
+.tarjeta__cabecera {
   display: flex;
   flex-wrap: wrap;
-  align-items: end;
-  gap: var(--esp-3);
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--esp-2);
+}
+
+.datos > summary {
+  cursor: pointer;
+  color: var(--acento);
+  font-size: 0.875rem;
+  margin-bottom: var(--esp-2);
+}
+
+/* Sin datos todavía, el desplegable no se muestra. */
+.datos:has(.tabla:empty) {
+  display: none;
+}
+
+.campo--linea {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-2);
 }
 
 .ventana__grafica {
@@ -154,6 +159,11 @@ kbd {
   stroke-width: 1.5;
   stroke-dasharray: 5 5;
   opacity: 0.6;
+}
+
+.grafica-crecimiento__actual {
+  stroke: var(--texto);
+  stroke-width: 2;
 }
 
 .grafica-crecimiento__serie {
@@ -496,7 +506,8 @@ kbd {
 }
 
 @media (max-width: 700px) {
-  .graficas {
+  .graficas,
+  .graficas-complejidad {
     grid-template-columns: 1fr;
   }
 }

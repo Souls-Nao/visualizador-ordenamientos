@@ -1,43 +1,40 @@
 /**
  * js/core/crecimiento.js
  * ─────────────────────────────────────────────────────────────────────────
- * Medición del crecimiento de cada algoritmo (requisito 8, ventana
- * "Crecimiento"). Es la idea de benchmark.py: para varios tamaños n se
- * genera UNA lista aleatoria y cada algoritmo la ordena, sin animar.
+ * Medición del crecimiento de cada algoritmo según el tamaño n (requisito 8,
+ * gráfica "Crecimiento según el tamaño"). Es la idea de benchmark.py, pero
+ * con el MISMO arreglo que el usuario ve en las barras: para cada tamaño n
+ * se usan sus primeros n elementos (prefijos). El último punto es la misma
+ * ejecución que se acaba de animar.
  *
  * Dos medidas:
  *   - 'comparaciones': cuántas comparaciones hace (contarEjecucion, B07).
- *     No depende de la computadora, solo del algoritmo y de la lista:
- *     muestra la complejidad sin el ruido de la medición de tiempo.
+ *     No depende de la computadora, solo del algoritmo y de la lista.
  *   - 'tiempo': milisegundos por ejecución, como en la práctica. El reloj
  *     del navegador redondea a ~0.1 ms, así que se mide por lotes: se
  *     repite hasta acumular MIN_MS_LOTE y se divide entre las vueltas.
  *
- * Se mide el mismo generador que se anima, así el tiempo corresponde al
- * código que se ve en pantalla.
- *
- * No usa el DOM. `calcularCrecimiento` cede el control entre tamaños para
- * que la página no se congele y pueda mostrar el progreso.
+ * Se mide el mismo generador que se anima. No usa el DOM.
+ * `calcularCrecimiento` cede el control entre tamaños para que la página no
+ * se congele.
  */
 import { ALGORITMOS } from '../algoritmos/index.js';
-import { generarDatos, PATRONES } from './datos.js';
 import { contarEjecucion } from './metricas.js';
 
 export const MEDIDAS = Object.freeze({ COMPARACIONES: 'comparaciones', TIEMPO: 'tiempo' });
 
-/** Límites de la ventana: suficientes para ver la forma de las curvas sin esperar demasiado. */
-export const CRECIMIENTO_N_MIN = 10;
+/** Tamaño máximo que se mide: con más, un algoritmo O(n²) tardaría segundos por punto. */
 export const CRECIMIENTO_N_MAX = 2000;
 export const PUNTOS = 10;
 
-/** Stooge Sort (n^2.71) se omite por encima de este tamaño: tardaría varios segundos. */
+/** Stooge Sort (n^2.71) se omite por encima de este tamaño. */
 export const LIMITE_STOOGE_CRECIMIENTO = 200;
 
 const MIN_MS_LOTE = 5;
 const MAX_VUELTAS = 1024;
 
 /**
- * Tamaños equiespaciados de nMax/PUNTOS hasta nMax (enteros, sin repetir).
+ * Hasta PUNTOS tamaños equiespaciados de nMax/PUNTOS hasta nMax (enteros ≥ 2, sin repetir).
  *
  * @param {number} nMax
  * @returns {number[]}
@@ -69,34 +66,36 @@ export function medirComparaciones(id, lista) {
 }
 
 /**
- * Mide cada algoritmo para varios tamaños hasta nMax.
+ * Mide cada algoritmo con prefijos crecientes de `lista`.
  *
  * @param {Object} opciones
  * @param {string[]} opciones.ids
- * @param {number} opciones.nMax
- * @param {string} opciones.medida                  Valor de MEDIDAS.
+ * @param {number[]} opciones.lista      La lista de la visualización (no se modifica).
+ * @param {string} opciones.medida       Valor de MEDIDAS.
  * @param {(hecho: number, total: number) => void} [opciones.alProgreso]
- * @returns {Promise<{ medida, tamanos: number[], series: Record<string, (number|null)[]>, omitidos: string[] }>}
+ * @returns {Promise<{ medida, tamanos: number[], series: Record<string, (number|null)[]>,
+ *                     omitidos: string[], recortada: boolean }>}
  */
-export async function calcularCrecimiento({ ids, nMax, medida, alProgreso = () => {} }) {
-  const tamanos = tamanosHasta(nMax);
+export async function calcularCrecimiento({ ids, lista, medida, alProgreso = () => {} }) {
+  const base = lista.slice(0, CRECIMIENTO_N_MAX);
+  const tamanos = tamanosHasta(base.length);
   const series = Object.fromEntries(ids.map((id) => [id, []]));
   const omitidos = new Set();
   const medir = medida === MEDIDAS.TIEMPO ? medirTiempo : medirComparaciones;
 
   for (const [k, n] of tamanos.entries()) {
-    const lista = generarDatos(n, PATRONES.ALEATORIA); // misma lista para todos
+    const prefijo = base.slice(0, n); // los primeros n elementos de la misma lista
     for (const id of ids) {
       if (id === 'stooge' && n > LIMITE_STOOGE_CRECIMIENTO) {
         series[id].push(null);
         omitidos.add(id);
       } else {
-        series[id].push(medir(id, lista));
+        series[id].push(medir(id, prefijo));
       }
     }
     alProgreso(k + 1, tamanos.length);
     await new Promise((listo) => setTimeout(listo, 0)); // deja respirar a la página
   }
 
-  return { medida, tamanos, series, omitidos: [...omitidos] };
+  return { medida, tamanos, series, omitidos: [...omitidos], recortada: lista.length > base.length };
 }

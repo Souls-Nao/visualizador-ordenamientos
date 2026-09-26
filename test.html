@@ -44,7 +44,8 @@
   import { crearEscena } from './js/ui/escena.js';
   import { CLASES, estimarOperaciones, crearGraficaComplejidad } from './js/ui/complejidad.js';
   import { tamanosHasta, medirComparaciones, calcularCrecimiento, MEDIDAS } from './js/core/crecimiento.js';
-  import { crearGraficaCrecimiento } from './js/ui/ventanaCrecimiento.js';
+  import { crearGraficaCrecimiento } from './js/ui/graficaCrecimiento.js';
+  import { crearGraficaVivo } from './js/ui/graficaVivo.js';
   import { generarDatos, PATRONES } from './js/core/datos.js';
 
   /*
@@ -357,8 +358,9 @@
     caja.remove();
 
     const html = new DOMParser().parseFromString(await (await fetch('index.html')).text(), 'text/html');
-    reportar(V, 'index.html ya no tiene benchmark ni selector de patrón, y el tamaño es un campo numérico',
-      !html.querySelector('#vista-benchmark, [data-vista=benchmark], #sel-patron') &&
+    reportar(V, 'index.html: sin benchmark, patrón ni ventana; tamaño numérico y las dos gráficas de complejidad',
+      !html.querySelector('#vista-benchmark, [data-vista=benchmark], #sel-patron, dialog') &&
+      !!html.querySelector('#zona-grafica-vivo') && !!html.querySelector('#zona-grafica-crecimiento') &&
       html.getElementById('inp-tamano')?.type === 'number');
   }
 
@@ -425,7 +427,8 @@
       tamanosHasta(100).join() === '10,20,30,40,50,60,70,80,90,100' &&
       medirComparaciones('bubble', [5, 4, 3, 2, 1]) === 10);
 
-    const r = await calcularCrecimiento({ ids: ['bubble', 'merge', 'stooge'], nMax: 300, medida: MEDIDAS.COMPARACIONES });
+    const listaUsuario = generarDatos(300, PATRONES.ALEATORIA);
+    const r = await calcularCrecimiento({ ids: ['bubble', 'merge', 'stooge'], lista: listaUsuario, medida: MEDIDAS.COMPARACIONES });
     const stooge = r.series.stooge;
     reportar(G, 'Mide cada algoritmo en cada tamaño, crece con n y omite Stooge con n > 200',
       r.tamanos.length === 10 && r.series.bubble.every((v, k) => k === 0 || v > r.series.bubble[k - 1]) &&
@@ -439,6 +442,33 @@
       svg.querySelectorAll('.grafica-crecimiento__serie').length === 3 &&
       svg.querySelectorAll('.grafica-crecimiento__teorica').length === 3 &&
       svgTiempo.querySelectorAll('.grafica-crecimiento__teorica').length === 0);
+  }
+
+  // ── Prefijos del mismo arreglo y gráfica en vivo ──
+  {
+    const G = 'Crecimiento';
+    const lista = generarDatos(40, PATRONES.ALEATORIA);
+    const r = await calcularCrecimiento({ ids: ['insertion'], lista, medida: MEDIDAS.COMPARACIONES });
+    const esperado = r.tamanos.map((n) => medirComparaciones('insertion', lista.slice(0, n)));
+    reportar(G, 'Usa los primeros n elementos de la lista del usuario; el último punto es la lista completa',
+      r.tamanos.at(-1) === 40 && r.series.insertion.join() === esperado.join());
+
+    const caja = document.createElement('div');
+    document.body.append(caja);
+    const vivo = crearGraficaVivo(caja);
+    const fila = (id, pasos, comparaciones) => ({ id, pasos, comparaciones });
+    vivo.actualizar([fila('bubble', 0, 0), fila('merge', 0, 0)], 30);
+    vivo.actualizar([fila('bubble', 10, 6), fila('merge', 10, 7)], 30);
+    vivo.actualizar([fila('merge', 12, 9), fila('bubble', 20, 14)], 30); // el resumen viene por llegada
+    const lineas = caja.querySelectorAll('.grafica-crecimiento__serie');
+    const referencias = caja.querySelectorAll('.grafica-crecimiento__teorica');
+    const puntosBubble = lineas[0]?.getAttribute('points').split(' ').length;
+    vivo.actualizar([fila('bubble', 0, 0), fila('merge', 0, 0)], 30); // Reiniciar
+    const trasReiniciar = caja.querySelectorAll('.grafica-crecimiento__serie')[0]?.getAttribute('points').split(' ').length;
+    reportar(G, 'La gráfica en vivo agrega un punto por avance, marca n² y n log n, y se reinicia al volver a cero',
+      lineas.length === 2 && referencias.length === 2 && puntosBubble === 3 && trasReiniciar === 1,
+      `líneas ${lineas.length}, referencias ${referencias.length}, puntos ${puntosBubble}, tras reiniciar ${trasReiniciar}`);
+    caja.remove();
   }
 
   const resumen = document.getElementById('resumen');
